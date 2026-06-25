@@ -9,12 +9,12 @@
 
 | Field | Value |
 |---|---|
-| **Current Version** | v0.3.10 |
+| **Current Version** | v0.3.15 |
 | **Phase** | ⚙️ Core Systems |
 | **Last Updated** | June 2026 |
-| **Last GitHub Commit** | fix: remove dragon gate and add castle illumination |
+| **Last GitHub Commit** | `evilish map ready` |
 | **Branch** | `main` |
-| **Active Feature** | Keep Illumination and Gate Removal |
+| **Active Feature** | Inward-Facing Tridents and Watchtower Braziers |
 | **Blocking Issues** | None |
 
 ---
@@ -148,11 +148,120 @@ Every GitHub push gets logged here. Most recent at the top.
 
 ---
 
+### v0.3.15 — Wall Lamps, Massive Tridents, and Clean Keep Entrances
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 🗺️ Map Aesthetics & Bug Fixes
+
+**What was added:**
+- Removed all vertical neon magma veins from the outer walls.
+- Placed dynamically generated and spaced devilish lamps along the inner faces of all outer walls (spaced 35 studs).
+- Re-designed the 4 corner spires with massive, curved, and spikey crystal tridents (height 33 studs) aligned using CFrame.lookAt to point directly facing the central crystal.
+- Added central core spheres, winged crossbar blades, pointy wedges, and barbs to the tridents.
+- Color-matched the corner tower basalt veins to match their respective magic tridents.
+- Ended visual path segments exactly at Castle Keep entrances, keeping the interior floor clean and resolving path Z-fighting.
+- Replaced cyan neon watchtower crystals with castle-themed stone fire braziers casting a warm flame glow over the castle keep.
+
+**What was removed:**
+- Vertical neon magma veins on outer walls.
+- Static hardcoded `wallLamps` list.
+- `KeepEntrancePath` and `KeepInsidePath` visual segments.
+
+**Rollbacks:** None
+
+**Notes:** Z-fighting path issues are completely gone, and enclosing walls look more gothic and detailed with the lamp and trident upgrades.
+
+---
+
+### v0.3.14 — Trident Enhancements and Wall Color Coding
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 🗺️ Map Aesthetics & Lighting
+
+**What was added:**
+- Resized the corner crystal tridents to be twice as large (cross-bars length = 8, central prong height = 12, side prongs height = 10).
+- Restructured the prongs to curve/bend: the side prongs now angle out at 45 degrees, then bend back to point straight up, resembling a classic weapon/trident shape.
+- Color-matched the outer wall magma veins to the nearest portal: West Wall is green (Forest), East Wall is purple (Undead), South Wall is crimson (Dragon), and North Wall is standard magma red/orange.
+
+**What was removed:**
+- Generic orange veins on all sides.
+
+**Rollbacks:** None
+
+**Notes:** Wall veins now match their biomes and portals, and the corner crystal tridents are massive and properly shaped.
+
+---
+
+### v0.3.13 — Wall Magma Veins and Trident Crystals
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 🗺️ Map Aesthetics & Details
+
+**What was added:**
+- Procedurally generated vertical glowing orange/red neon magma veins along the inner faces of all outer enclosing wall segments.
+- Constructed custom pointy glowing crystal trident decorations on top of the 4 outer corner basalt spires.
+- Colored the tridents differently per corner: Northwest (Violet/Magenta), Northeast (Corrupt Green), Southwest (Crimson Red), and Southeast (Cyan Ice Blue).
+
+**What was removed:**
+- Plain wall faces.
+
+**Rollbacks:** None
+
+**Notes:** Arena borders now look much more detailed, featuring glowing magma veins and colorful magical prongs on top of the corner spires.
+
+---
+
+### v0.3.12 — Path Elevation and Wall Lamps
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 🗺️ Map Polish & Lighting
+
+**What was added:**
+- Elevated the Forest, Undead, and Dragon enemy paths outside the keep to run at the keep floor elevation level (`Y = 4.0`).
+- Replaced the wedge entrance ramps at the castle keep walls with flat path segments, allowing smooth transitions.
+- Aligned KeepInsidePath flat on the keep floor at Y = 4.05.
+- Created `SpawnCornerTower` helper to spawn tall basalt corner spires (`size = 10, 32, 10`) with vertical glowing neon magma veins at the 4 corners of the map.
+- Created `SpawnDevilishLamp` helper and placed 16 wall-mounted glowing lamps with Fire blocks and PointLights along the inner faces of the enclosing walls.
+
+**What was removed:**
+- Wedge entrance ramps.
+
+**Rollbacks:** None
+
+**Notes:** Paths are now flat and continuous, and enclosing walls feature thematic lights and corner fortress spires.
+
+---
+
+### v0.3.11 — Tall Castle Enclosing Walls
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 🗺️ Map Aesthetics & Perimeter
+
+**What was added:**
+- Added a `400 x 400` square perimeter of tall castle-style enclosing walls (`height = 24`, `thickness = 6`, Slate material) to completely surround the play area.
+- Symmetrically split the enclosing walls to align with the Forest, Undead, and Dragon spawn gates, making them look seamlessly embedded in the walls.
+- Automatically generated matching crenellations (battlements) on top of all enclosing wall segments.
+- Preserved all devilish/themed gate details (thorns, spires, bones, magma veins, basalt horns) untouched.
+
+**What was removed:**
+- Open space boundaries around gates.
+
+**Rollbacks:** None
+
+**Notes:** Play area is now fully enclosed, making the arena feel like a massive canyon/fortress.
+
+---
+
 ### v0.3.10 — Keep Illumination and Gate Removal
 **Date:** June 2026
-**GitHub Commit:** `fix: remove dragon gate and add castle illumination`
+**GitHub Commit:** `evilish map ready`
 **Branch:** `main`
-**Type:** 🗺️ Map Bugfix & Polish
+**Type:** 🗺️ Map Aesthetics & Bugfix
 
 **What was added:**
 - Removed the solid `DragonGate` part from the entrance of the Castle Keep on the lava path entirely so the road is completely open.

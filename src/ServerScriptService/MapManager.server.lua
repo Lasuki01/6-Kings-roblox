@@ -10,7 +10,7 @@ local Lighting = game:GetService("Lighting")
 -- Configuration Constants
 local CRYSTAL_MAX_HP = 1000
 local PATH_WIDTH = 16
-local PATH_HEIGHT = 1.0
+local PATH_HEIGHT = 3.5
 
 -- Helper: Create a styled part
 local function CreatePart(name, size, position, color, material, parent)
@@ -89,6 +89,117 @@ local function CreatePortalEffects(name, size, cf, color, particleColor1, partic
 	emitter.Parent = portalPlane
 
 	return portalPlane
+end
+
+-- Helper: Interpolate between two colors
+local function InterpolateColor(c1, c2, fraction)
+	return Color3.new(
+		c1.R + (c2.R - c1.R) * fraction,
+		c1.G + (c2.G - c1.G) * fraction,
+		c1.B + (c2.B - c1.B) * fraction
+	)
+end
+
+-- Helper: Spawn corner basalt fortress towers with magma veins and themed glowing crystal tridents
+local function SpawnCornerTower(pos, crystalColor, parent)
+	local tower = CreatePart("OuterCornerTower", Vector3.new(10, 32, 10), pos + Vector3.new(0, 14, 0), Color3.fromRGB(20, 20, 25), Enum.Material.Basalt, parent)
+	tower.CastShadow = true
+	
+	local spire = CreatePart("OuterCornerSpire", Vector3.new(6, 10, 6), pos + Vector3.new(0, 35, 0), Color3.fromRGB(15, 15, 18), Enum.Material.Basalt, parent)
+	
+	-- Veins on the corner tower match the crystal/trident color of the tower
+	local veinColor = crystalColor
+	CreatePart("MagmaVein", Vector3.new(0.6, 26, 0.6), pos + Vector3.new(4.8, 11, 0), veinColor, Enum.Material.Neon, parent)
+	CreatePart("MagmaVein", Vector3.new(0.6, 26, 0.6), pos + Vector3.new(-4.8, 11, 0), veinColor, Enum.Material.Neon, parent)
+	CreatePart("MagmaVein", Vector3.new(0.6, 26, 0.6), pos + Vector3.new(0, 11, 4.8), veinColor, Enum.Material.Neon, parent)
+	CreatePart("MagmaVein", Vector3.new(0.6, 26, 0.6), pos + Vector3.new(0, 11, -4.8), veinColor, Enum.Material.Neon, parent)
+
+	-- Spindle/base of the trident crystal (Y top of spire is Y = 42)
+	-- Use CFrame.lookAt to align the trident's local front face (-Z axis) directly facing the central crystal
+	local tridentPos = pos + Vector3.new(0, 40, 0)
+	local tridentBaseCF = CFrame.lookAt(tridentPos, Vector3.new(0, tridentPos.Y, 0))
+
+	-- Helper to create parts relative to the trident's local CFrame
+	local function CreateTridentPart(name, size, relativeCF, color, material)
+		local part = CreatePart(name, size, Vector3.new(0, 0, 0), color, material, parent)
+		part.CFrame = tridentBaseCF * relativeCF
+		part.CanCollide = false
+		part.CastShadow = false
+		return part
+	end
+
+	-- Helper to create wedges relative to the trident's local CFrame
+	local function CreateTridentWedge(name, size, relativeCF, color, material)
+		local wedge = Instance.new("WedgePart")
+		wedge.Name = name
+		wedge.Size = size
+		wedge.Color = color
+		wedge.Material = material
+		wedge.Anchored = true
+		wedge.CanCollide = false
+		wedge.CastShadow = false
+		wedge.CFrame = tridentBaseCF * relativeCF
+		wedge.Parent = parent
+		return wedge
+	end
+
+	-- 1. Shaft / Spindle (tall cylinders/blocks rising from spire)
+	CreateTridentPart("TridentShaftLower", Vector3.new(2.5, 6, 2.5), CFrame.new(0, 3, 0), crystalColor, Enum.Material.Neon)
+	CreateTridentPart("TridentShaftRing", Vector3.new(3.5, 1, 3.5), CFrame.new(0, 5.5, 0), crystalColor, Enum.Material.Neon)
+
+	-- 2. Central Core (large glowing sphere)
+	local core = CreateTridentPart("TridentCore", Vector3.new(4, 4, 4), CFrame.new(0, 8, 0), crystalColor, Enum.Material.Neon)
+	core.Shape = Enum.PartType.Ball
+
+	-- 3. Winged/Curved Crossbar (angled upward arms)
+	CreateTridentPart("TridentCrossbarL", Vector3.new(6, 2, 2), CFrame.new(-2.5, 8.5, 0) * CFrame.Angles(0, 0, math.rad(15)), crystalColor, Enum.Material.Neon)
+	CreateTridentPart("TridentCrossbarR", Vector3.new(6, 2, 2), CFrame.new(2.5, 8.5, 0) * CFrame.Angles(0, 0, math.rad(-15)), crystalColor, Enum.Material.Neon)
+
+	-- 4. Central Prong (massive vertical middle spike)
+	CreateTridentPart("TridentProngCenterLower", Vector3.new(2.5, 18, 2.5), CFrame.new(0, 17, 0), crystalColor, Enum.Material.Neon)
+	-- Wedge tip pointing straight up (WedgePart slants along its local Z, so rotate 90 deg around Y)
+	CreateTridentWedge("TridentProngCenterTip", Vector3.new(2.5, 5, 2.5), CFrame.new(0, 28.5, 0) * CFrame.Angles(0, math.rad(90), 0), crystalColor, Enum.Material.Neon)
+
+	-- 5. Left Prong (curves out and up, with outer spike barb)
+	-- Base angled out
+	CreateTridentPart("TridentProngLBase", Vector3.new(2.2, 8, 2.2), CFrame.new(-6, 13, 0) * CFrame.Angles(0, 0, math.rad(-25)), crystalColor, Enum.Material.Neon)
+	-- Mid angled back in slightly to point up
+	CreateTridentPart("TridentProngLMid", Vector3.new(1.8, 12, 1.8), CFrame.new(-7.5, 22, 0) * CFrame.Angles(0, 0, math.rad(5)), crystalColor, Enum.Material.Neon)
+	-- Wedge tip pointing straight up
+	CreateTridentWedge("TridentProngLTip", Vector3.new(1.8, 5, 1.8), CFrame.new(-7, 30.5, 0) * CFrame.Angles(0, math.rad(90), 0), crystalColor, Enum.Material.Neon)
+	-- Evil outer barb pointing out
+	CreateTridentPart("TridentProngLBarb", Vector3.new(1.2, 4, 1.2), CFrame.new(-8.5, 17, 0) * CFrame.Angles(0, 0, math.rad(-60)), crystalColor, Enum.Material.Neon)
+
+	-- 6. Right Prong (curves out and up, with outer spike barb)
+	-- Base angled out
+	CreateTridentPart("TridentProngRBase", Vector3.new(2.2, 8, 2.2), CFrame.new(6, 13, 0) * CFrame.Angles(0, 0, math.rad(25)), crystalColor, Enum.Material.Neon)
+	-- Mid angled back in slightly to point up
+	CreateTridentPart("TridentProngRMid", Vector3.new(1.8, 12, 1.8), CFrame.new(7.5, 22, 0) * CFrame.Angles(0, 0, math.rad(-5)), crystalColor, Enum.Material.Neon)
+	-- Wedge tip pointing straight up
+	CreateTridentWedge("TridentProngRTip", Vector3.new(1.8, 5, 1.8), CFrame.new(7, 30.5, 0) * CFrame.Angles(0, math.rad(90), 0), crystalColor, Enum.Material.Neon)
+	-- Evil outer barb pointing out
+	CreateTridentPart("TridentProngRBarb", Vector3.new(1.2, 4, 1.2), CFrame.new(8.5, 17, 0) * CFrame.Angles(0, 0, math.rad(60)), crystalColor, Enum.Material.Neon)
+end
+
+-- Helper: Spawn devilish lamps on outer walls
+local function SpawnDevilishLamp(position, direction, parent)
+	local bracket = CreatePart("LampBracket", Vector3.new(1.2, 1.2, 1.2), position + direction * 0.6, Color3.fromRGB(30, 25, 25), Enum.Material.Basalt, parent)
+	local bulb = CreatePart("LampBulb", Vector3.new(1.0, 1.6, 1.0), position + direction * 1.5, Color3.fromRGB(255, 80, 0), Enum.Material.Neon, parent)
+	bulb.CanCollide = false
+	
+	local fire = Instance.new("Fire")
+	fire.Color = Color3.fromRGB(255, 60, 0)
+	fire.SecondaryColor = Color3.fromRGB(255, 150, 0)
+	fire.Size = 3
+	fire.Heat = 5
+	fire.Parent = bulb
+	
+	local light = Instance.new("PointLight")
+	light.Color = Color3.fromRGB(255, 100, 0)
+	light.Range = 25
+	light.Brightness = 2.0
+	light.Shadows = true
+	light.Parent = bulb
 end
 
 -- Helper: Create visual path segments aligned along cardinal axes
@@ -221,26 +332,41 @@ local function DecorateWatchtower(towerPart, parent)
 	r2.CastShadow = true
 	r3.CastShadow = true
 
-	local crystal = CreatePart(
-		"WatchtowerCrystal",
-		Vector3.new(2, 4, 2),
-		Vector3.new(pos.X, topY + 8, pos.Z),
-		Color3.fromRGB(0, 255, 255),
-		Enum.Material.Neon,
+	-- Castle-themed stone fire brazier
+	local base = CreatePart(
+		"BrazierBase",
+		Vector3.new(3.5, 1.5, 3.5),
+		Vector3.new(pos.X, topY + 6.75, pos.Z),
+		Color3.fromRGB(40, 40, 45),
+		Enum.Material.Slate,
 		parent
 	)
-	crystal.CanCollide = false
-	
-	local selectionBox = Instance.new("SelectionBox")
-	selectionBox.Color3 = Color3.fromRGB(0, 180, 255)
-	selectionBox.Adornee = crystal
-	selectionBox.Parent = crystal
+	base.CastShadow = true
+
+	local bowl = CreatePart(
+		"BrazierBowl",
+		Vector3.new(2.5, 0.8, 2.5),
+		Vector3.new(pos.X, topY + 7.5, pos.Z),
+		Color3.fromRGB(20, 20, 22),
+		Enum.Material.CorrodedMetal,
+		parent
+	)
+	bowl.CanCollide = false
+	bowl.CastShadow = false
+
+	local fire = Instance.new("Fire")
+	fire.Color = Color3.fromRGB(255, 100, 20)
+	fire.SecondaryColor = Color3.fromRGB(255, 200, 50)
+	fire.Size = 4
+	fire.Heat = 6
+	fire.Parent = bowl
 
 	local light = Instance.new("PointLight")
-	light.Color = Color3.fromRGB(0, 255, 255)
-	light.Range = 30
-	light.Brightness = 1.5
-	light.Parent = crystal
+	light.Color = Color3.fromRGB(255, 120, 30)
+	light.Range = 35
+	light.Brightness = 2.0
+	light.Shadows = true
+	light.Parent = bowl
 end
 
 -- Helper: Spawn environment props offset from paths without overlaps
@@ -503,6 +629,115 @@ local function InitializeMap()
 	DecorateWatchtower(tSW, mapModel)
 	DecorateWatchtower(tSE, mapModel)
 
+	-- Outer Enclosing Walls (400x400 perimeter, Y height = 24, Y center = 12, thickness = 6)
+	local outerWallColor = Color3.fromRGB(80, 80, 85)
+	local outerWallMaterial = Enum.Material.Slate
+	local outerWallHeight = 24
+	local outerWallY = 12
+	local outerWallThickness = 6
+
+	-- Helper: Create and crenellate an outer wall segment, with glowing magma veins on the inner face
+	-- Helper: Create and crenellate an outer wall segment, with devilish lamps on the inner face
+	local function BuildOuterWallSegment(name, size, position, isZAxis)
+		local wall = CreatePart(name, size, position, outerWallColor, outerWallMaterial, mapModel)
+		wall.CastShadow = true
+		AddWallCrenellations(wall, mapModel)
+		
+		-- Generate devilish lamps on the inner face of the wall segment
+		local wallHeight = size.Y
+		local wallLength = isZAxis and size.Z or size.X
+		local thickness = size.X > size.Z and size.Z or size.X
+		
+		-- Place lamps spaced along the wall length
+		local step = 35
+		local current = -wallLength / 2 + 15
+		while current < wallLength / 2 - 10 do
+			local lampOffset
+			local lampDirection
+			
+			if isZAxis then
+				-- If X < 0 (West Wall), points in +X direction. If X > 0 (East Wall), points in -X direction.
+				local directionSign = (position.X < 0) and 1 or -1
+				lampDirection = Vector3.new(directionSign, 0, 0)
+				
+				local xOffset = directionSign * (thickness / 2)
+				lampOffset = Vector3.new(xOffset, 0, current)
+			else
+				-- If Z < 0 (North Wall), points in +Z direction. If Z > 0 (South Wall), points in -Z direction.
+				local directionSign = (position.Z < 0) and 1 or -1
+				lampDirection = Vector3.new(0, 0, directionSign)
+				
+				local zOffset = directionSign * (thickness / 2)
+				lampOffset = Vector3.new(current, 0, zOffset)
+			end
+			
+			-- Position is Y = 12 (halfway up the wall)
+			local lampPos = position + lampOffset
+			SpawnDevilishLamp(lampPos, lampDirection, mapModel)
+			
+			current = current + step
+		end
+		
+		return wall
+	end
+
+	-- 1. North Wall (Solid, Z = -200)
+	BuildOuterWallSegment(
+		"OuterWallNorth",
+		Vector3.new(406, outerWallHeight, outerWallThickness),
+		Vector3.new(0, outerWallY, -200),
+		false
+	)
+
+	-- 2. South Wall (Z = 200, splits at X = -15 to 15 for Dragon Gate)
+	BuildOuterWallSegment(
+		"OuterWallSouthWest",
+		Vector3.new(188, outerWallHeight, outerWallThickness),
+		Vector3.new(-109, outerWallY, 200),
+		false
+	)
+	BuildOuterWallSegment(
+		"OuterWallSouthEast",
+		Vector3.new(188, outerWallHeight, outerWallThickness),
+		Vector3.new(109, outerWallY, 200),
+		false
+	)
+
+	-- 3. West Wall (X = -200, splits at Z = -12 to 12 for Forest Gate)
+	BuildOuterWallSegment(
+		"OuterWallWestNorth",
+		Vector3.new(outerWallThickness, outerWallHeight, 185),
+		Vector3.new(-200, outerWallY, -104.5),
+		true
+	)
+	BuildOuterWallSegment(
+		"OuterWallWestSouth",
+		Vector3.new(outerWallThickness, outerWallHeight, 185),
+		Vector3.new(-200, outerWallY, 104.5),
+		true
+	)
+
+	-- 4. East Wall (X = 200, splits at Z = -12 to 12 for Undead Gate)
+	BuildOuterWallSegment(
+		"OuterWallEastNorth",
+		Vector3.new(outerWallThickness, outerWallHeight, 185),
+		Vector3.new(200, outerWallY, -104.5),
+		true
+	)
+	BuildOuterWallSegment(
+		"OuterWallEastSouth",
+		Vector3.new(outerWallThickness, outerWallHeight, 185),
+		Vector3.new(200, outerWallY, 104.5),
+		true
+	)
+
+	-- Spawn 4 corner basalt spires with magma veins and themed glowing crystal tridents
+	-- NW: Violet/Magenta, NE: Corrupt Green, SW: Crimson Red, SE: Cyan Ice Blue
+	SpawnCornerTower(Vector3.new(-200, 2, -200), Color3.fromRGB(150, 0, 255), mapModel)
+	SpawnCornerTower(Vector3.new(200, 2, -200), Color3.fromRGB(0, 220, 50), mapModel)
+	SpawnCornerTower(Vector3.new(-200, 2, 200), Color3.fromRGB(255, 30, 0), mapModel)
+	SpawnCornerTower(Vector3.new(200, 2, 200), Color3.fromRGB(0, 180, 255), mapModel)
+
 	-- 2. Create the tiered Altar for the Kingdom Crystal (Center of Keep, Y top = 10)
 	local altarColor = Color3.fromRGB(150, 150, 160)
 	local altarMaterial = Enum.Material.Marble
@@ -570,28 +805,28 @@ local function InitializeMap()
 	detailsFolder.Name = "EnvironmentDetails"
 	detailsFolder.Parent = mapModel
 
-	-- Clean, grid-aligned paths
+	-- Clean, grid-aligned paths (elevated to Keep floor level Y = 4.0)
 	local forestWaypoints = {
-		Vector3.new(-200, 0.5, 0),
-		Vector3.new(-120, 0.5, 0),
-		Vector3.new(-50, 0.5, 0),
-		Vector3.new(-30, 2.5, 0),
+		Vector3.new(-200, 4.0, 0),
+		Vector3.new(-120, 4.0, 0),
+		Vector3.new(-50, 4.0, 0),
+		Vector3.new(-30, 4.0, 0),
 		Vector3.new(0, 8.5, 0)
 	}
 
 	local undeadWaypoints = {
-		Vector3.new(200, 0.5, 0),
-		Vector3.new(120, 0.5, 0),
-		Vector3.new(50, 0.5, 0),
-		Vector3.new(30, 2.5, 0),
+		Vector3.new(200, 4.0, 0),
+		Vector3.new(120, 4.0, 0),
+		Vector3.new(50, 4.0, 0),
+		Vector3.new(30, 4.0, 0),
 		Vector3.new(0, 8.5, 0)
 	}
 
 	local dragonWaypoints = {
-		Vector3.new(0, 0.5, 200),
-		Vector3.new(0, 0.5, 120),
-		Vector3.new(0, 0.5, 50),
-		Vector3.new(0, 2.5, 30),
+		Vector3.new(0, 4.0, 200),
+		Vector3.new(0, 4.0, 120),
+		Vector3.new(0, 4.0, 50),
+		Vector3.new(0, 4.0, 30),
 		Vector3.new(0, 8.5, 0)
 	}
 
@@ -653,55 +888,7 @@ local function InitializeMap()
 			DecoratePathSegment(p1, p2, pathName, i, pathFolder, placementFolder, detailsFolder)
 		end
 
-		-- Create Ramp rising through the wall opening to the Keep
-		local pStart = data.Waypoints[rampStartIdx]
-		local pEnd = data.Waypoints[rampStartIdx + 1]
-		local distance = (pEnd - pStart).Magnitude
-		local center = (pStart + pEnd) / 2 + Vector3.new(0, 0.75, 0)
-		
-		local isZAxis = math.abs(pEnd.X - pStart.X) < 0.1
-
-		local ramp = Instance.new("WedgePart")
-		ramp.Name = "KeepEntranceRamp"
-		ramp.Color = data.Color
-		ramp.Material = data.Material
-		ramp.Size = Vector3.new(PATH_WIDTH, 3.0, distance)
-		ramp.Anchored = true
-		ramp.CanCollide = true
-		ramp.Parent = pathFolder
-
-		if isZAxis then
-			if pEnd.Z > pStart.Z then
-				ramp.CFrame = CFrame.new(center) * CFrame.Angles(0, math.pi, 0)
-			else
-				ramp.CFrame = CFrame.new(center)
-			end
-		else
-			if pEnd.X > pStart.X then
-				ramp.CFrame = CFrame.new(center) * CFrame.Angles(0, -math.pi / 2, 0)
-			else
-				ramp.CFrame = CFrame.new(center) * CFrame.Angles(0, math.pi / 2, 0)
-			end
-		end
-
-		-- Flat visual path segments inside Keep
-		local pRampExit = data.Waypoints[rampStartIdx + 1]
-		local pAltarBase = data.Waypoints[#data.Waypoints]
-		
-		local keepSegmentLength = (pAltarBase - pRampExit).Magnitude - 18
-		local keepPathDirection = (pAltarBase - pRampExit).Unit
-		local keepPathEnd = pRampExit + keepPathDirection * keepSegmentLength
-		
-		local keepPathCenter = (pRampExit + keepPathEnd) / 2 + Vector3.new(0, 1.5, 0)
-		local keepPathFloorSize
-		if isZAxis then
-			keepPathFloorSize = Vector3.new(PATH_WIDTH, 0.1, keepSegmentLength)
-		else
-			keepPathFloorSize = Vector3.new(keepSegmentLength, 0.1, PATH_WIDTH)
-		end
-		
-		local keepPathFloor = CreatePart("KeepInsidePath", keepPathFloorSize, keepPathCenter, data.Color, data.Material, pathFolder)
-		keepPathFloor.CastShadow = false
+		-- Visual paths end at Castle Keep entrances. Waypoints are retained for logic.
 
 		-- Generate Waypoint parts (for script movements)
 		for i, pointPos in ipairs(data.Waypoints) do
