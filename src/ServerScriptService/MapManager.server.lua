@@ -36,6 +36,61 @@ local function AddHighlight(part)
 	highlight.Parent = part
 end
 
+-- Helper: Setup portal plane with particles and light
+local function CreatePortalEffects(name, size, cf, color, particleColor1, particleColor2, parent)
+	local portalPlane = Instance.new("Part")
+	portalPlane.Name = name
+	portalPlane.Size = size
+	portalPlane.CFrame = cf
+	portalPlane.Color = color
+	portalPlane.Material = Enum.Material.Neon
+	portalPlane.Transparency = 0.5
+	portalPlane.CanCollide = false
+	portalPlane.CastShadow = false
+	portalPlane.TopSurface = Enum.SurfaceType.Smooth
+	portalPlane.BottomSurface = Enum.SurfaceType.Smooth
+	portalPlane.Anchored = true
+	portalPlane.Parent = parent
+
+	-- Point light
+	local light = Instance.new("PointLight")
+	light.Color = color
+	light.Range = 24
+	light.Brightness = 3.0
+	light.Shadows = true
+	light.Parent = portalPlane
+
+	-- Particle emitter
+	local emitter = Instance.new("ParticleEmitter")
+	emitter.Color = ColorSequence.new(particleColor1, particleColor2)
+	emitter.LightEmission = 1.0
+	emitter.Rate = 75 -- High rate for active look
+	emitter.Speed = NumberRange.new(4, 9) -- Shoots outwards
+	emitter.Lifetime = NumberRange.new(1.0, 2.0)
+	
+	emitter.Size = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0),
+		NumberSequenceKeypoint.new(0.15, 1.5),
+		NumberSequenceKeypoint.new(0.8, 1.0),
+		NumberSequenceKeypoint.new(1, 0)
+	})
+	
+	emitter.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.15, 0.2),
+		NumberSequenceKeypoint.new(0.8, 0.2),
+		NumberSequenceKeypoint.new(1, 1)
+	})
+	
+	emitter.SpreadAngle = Vector2.new(25, 25)
+	emitter.Acceleration = Vector3.new(0, 3, 0) -- floats up slightly as it moves out
+	emitter.EmissionDirection = Enum.NormalId.Front -- shoot out from flat front face
+	emitter.Texture = "rbxassetid://258122325"
+	emitter.Parent = portalPlane
+
+	return portalPlane
+end
+
 -- Helper: Create visual path segments aligned along cardinal axes
 local function CreateGridSegment(name, p1, p2, color, material, parent)
 	local x1, z1 = p1.X, p1.Z
@@ -483,6 +538,25 @@ local function InitializeMap()
 	selectionBox.Adornee = crystal
 	selectionBox.Parent = crystal
 
+	-- Add subtle blue glow to the Kingdom Crystal
+	local crystalLight = Instance.new("PointLight")
+	crystalLight.Color = Color3.fromRGB(0, 200, 255)
+	crystalLight.Range = 45
+	crystalLight.Brightness = 1.5
+	crystalLight.Shadows = true
+	crystalLight.Parent = crystal
+
+	-- Add 4 torches at the corners of the Castle Keep floor for subtle illumination
+	local keepTorches = {
+		Vector3.new(-42, 4.0, -42),
+		Vector3.new(42, 4.0, -42),
+		Vector3.new(-42, 4.0, 42),
+		Vector3.new(42, 4.0, 42)
+	}
+	for i, pos in ipairs(keepTorches) do
+		SpawnTorch("KeepTorch_" .. i, pos, mapModel)
+	end
+
 	-- 3. Setup Paths, Pedestals, Torches, and Environmental details
 	local pathsFolder = Instance.new("Folder")
 	pathsFolder.Name = "Paths"
@@ -647,34 +721,125 @@ local function InitializeMap()
 		-- Portal Gatehouses
 		local portalCenter = data.Spawn + Vector3.new(0, 8, 0)
 		if pathName == "ForestPath" then
-			-- Rustic Log Gatehouse
-			CreatePart("ForestPillarLeft", Vector3.new(4, 16, 4), portalCenter + Vector3.new(0, 0, -10), Color3.fromRGB(93, 64, 55), Enum.Material.Wood, pathFolder)
-			CreatePart("ForestPillarRight", Vector3.new(4, 16, 4), portalCenter + Vector3.new(0, 0, 10), Color3.fromRGB(93, 64, 55), Enum.Material.Wood, pathFolder)
-			CreatePart("ForestLintel", Vector3.new(4, 4, 24), portalCenter + Vector3.new(0, 8, 0), Color3.fromRGB(141, 110, 99), Enum.Material.Wood, pathFolder)
-		elseif pathName == "UndeadPath" then
-			-- Crypt Arch Portal
-			CreatePart("CryptPillarLeft", Vector3.new(4, 16, 4), portalCenter + Vector3.new(0, 0, -10), Color3.fromRGB(50, 50, 55), Enum.Material.Slate, pathFolder)
-			CreatePart("CryptPillarRight", Vector3.new(4, 16, 4), portalCenter + Vector3.new(0, 0, 10), Color3.fromRGB(50, 50, 55), Enum.Material.Slate, pathFolder)
-			local lintel = CreatePart("CryptArch", Vector3.new(4, 4, 24), portalCenter + Vector3.new(0, 8, 0), Color3.fromRGB(50, 50, 55), Enum.Material.Slate, pathFolder)
-			local glow = CreatePart("CryptGlow", Vector3.new(2, 1, 20), portalCenter + Vector3.new(0, 6, 0), Color3.fromRGB(150, 50, 255), Enum.Material.Neon, pathFolder)
-			glow.CanCollide = false
-		elseif pathName == "DragonPass" then
-			-- Obsidian volcanic portal (at Z = 200)
-			CreatePart("DragonPillarLeft", Vector3.new(6, 18, 6), portalCenter + Vector3.new(-12, 0, 0), Color3.fromRGB(20, 20, 25), Enum.Material.Basalt, pathFolder)
-			CreatePart("DragonPillarRight", Vector3.new(6, 18, 6), portalCenter + Vector3.new(12, 0, 0), Color3.fromRGB(20, 20, 25), Enum.Material.Basalt, pathFolder)
-			CreatePart("DragonLintel", Vector3.new(30, 6, 6), portalCenter + Vector3.new(0, 9, 0), Color3.fromRGB(20, 20, 25), Enum.Material.Basalt, pathFolder)
+			-- Corrupted Log Pillars and Lintel
+			local pL = CreatePart("ForestPillarLeft", Vector3.new(4, 18, 4), portalCenter + Vector3.new(0, 1, -10), Color3.fromRGB(40, 30, 25), Enum.Material.Wood, pathFolder)
+			local pR = CreatePart("ForestPillarRight", Vector3.new(4, 18, 4), portalCenter + Vector3.new(0, 1, 10), Color3.fromRGB(40, 30, 25), Enum.Material.Wood, pathFolder)
+			local lintel = CreatePart("ForestLintel", Vector3.new(4, 4, 24), portalCenter + Vector3.new(0, 10, 0), Color3.fromRGB(50, 40, 35), Enum.Material.Wood, pathFolder)
 			
-			-- The massive iron gate portcullis blocking the portal (destructible at Wave 10, size 18 wide, 18 tall, 2 thick)
-			local gate = CreatePart(
-				"DragonGate",
-				Vector3.new(18, 18, 2),
-				portalCenter + Vector3.new(0, 1, 0), -- Y center = 8.5 + 1.0 = 9.5 -> bottom rests on path floor (Y = 0.5)
-				Color3.fromRGB(70, 30, 30),
-				Enum.Material.CorrodedMetal,
+			-- Glowing neon green thorns protruding outwards
+			local thornSpecs = {
+				-- Left pillar thorns
+				{Pos = portalCenter + Vector3.new(0, -2, -11.5), Size = Vector3.new(1.2, 4, 1.2), Rot = CFrame.Angles(0, 0, math.rad(-35))},
+				{Pos = portalCenter + Vector3.new(0, 3, -11.5), Size = Vector3.new(1.0, 3.5, 1.0), Rot = CFrame.Angles(math.rad(15), 0, math.rad(-50))},
+				-- Right pillar thorns
+				{Pos = portalCenter + Vector3.new(0, -2, 11.5), Size = Vector3.new(1.2, 4, 1.2), Rot = CFrame.Angles(0, 0, math.rad(35))},
+				{Pos = portalCenter + Vector3.new(0, 3, 11.5), Size = Vector3.new(1.0, 3.5, 1.0), Rot = CFrame.Angles(math.rad(-15), 0, math.rad(50))},
+				-- Lintel top thorns
+				{Pos = portalCenter + Vector3.new(0, 12, -6), Size = Vector3.new(1.0, 4, 1.0), Rot = CFrame.Angles(0, 0, math.rad(-25))},
+				{Pos = portalCenter + Vector3.new(0, 12, 6), Size = Vector3.new(1.0, 4, 1.0), Rot = CFrame.Angles(0, 0, math.rad(25))}
+			}
+			for i, spec in ipairs(thornSpecs) do
+				local thorn = CreatePart("ForestThorn_" .. i, spec.Size, spec.Pos, Color3.fromRGB(50, 255, 50), Enum.Material.Neon, pathFolder)
+				thorn.CanCollide = false
+				thorn.CFrame = CFrame.new(spec.Pos) * spec.Rot
+			end
+
+			-- Portal Plane (facing down the path: +X direction)
+			local spawnDir = Vector3.new(1, 0, 0)
+			local cf = CFrame.lookAt(portalCenter - spawnDir * 0.5, portalCenter + spawnDir * 0.5)
+			CreatePortalEffects(
+				"ForestPortalPlane",
+				Vector3.new(16, 16, 0.5),
+				cf,
+				Color3.fromRGB(0, 220, 50),
+				Color3.fromRGB(50, 255, 100),
+				Color3.fromRGB(0, 120, 30),
 				pathFolder
 			)
-			gate.Name = "DragonGate"
-			gate.CastShadow = true
+		elseif pathName == "UndeadPath" then
+			-- Crypt Pillars, Lintel and Spires
+			local pL = CreatePart("CryptPillarLeft", Vector3.new(4, 18, 4), portalCenter + Vector3.new(0, 1, -10), Color3.fromRGB(25, 25, 30), Enum.Material.Slate, pathFolder)
+			local pR = CreatePart("CryptPillarRight", Vector3.new(4, 18, 4), portalCenter + Vector3.new(0, 1, 10), Color3.fromRGB(25, 25, 30), Enum.Material.Slate, pathFolder)
+			local lintel = CreatePart("CryptArch", Vector3.new(4, 4, 24), portalCenter + Vector3.new(0, 10, 0), Color3.fromRGB(30, 30, 35), Enum.Material.Slate, pathFolder)
+			
+			-- Gothic pointed stone spires on top of pillars
+			local spireL = CreatePart("CryptSpireLeft", Vector3.new(3, 6, 3), portalCenter + Vector3.new(0, 13, -10), Color3.fromRGB(20, 20, 25), Enum.Material.Slate, pathFolder)
+			local spireR = CreatePart("CryptSpireRight", Vector3.new(3, 6, 3), portalCenter + Vector3.new(0, 13, 10), Color3.fromRGB(20, 20, 25), Enum.Material.Slate, pathFolder)
+			
+			-- Bone rib cage decorations flanking the gate
+			local ribColor = Color3.fromRGB(220, 215, 200)
+			local ribMaterial = Enum.Material.SmoothPlastic
+			local ribSpecs = {
+				-- Left ribs curving towards the keep (X is negative direction)
+				{Pos = portalCenter + Vector3.new(-2, -3, -9), Size = Vector3.new(4, 1.2, 1.2), Rot = CFrame.Angles(0, math.rad(-30), math.rad(25))},
+				{Pos = portalCenter + Vector3.new(-3, 1, -9), Size = Vector3.new(5, 1.2, 1.2), Rot = CFrame.Angles(0, math.rad(-45), math.rad(15))},
+				{Pos = portalCenter + Vector3.new(-2, 5, -9), Size = Vector3.new(4, 1.2, 1.2), Rot = CFrame.Angles(0, math.rad(-30), math.rad(5))},
+				
+				-- Right ribs curving towards the keep
+				{Pos = portalCenter + Vector3.new(-2, -3, 9), Size = Vector3.new(4, 1.2, 1.2), Rot = CFrame.Angles(0, math.rad(30), math.rad(25))},
+				{Pos = portalCenter + Vector3.new(-3, 1, 9), Size = Vector3.new(5, 1.2, 1.2), Rot = CFrame.Angles(0, math.rad(45), math.rad(15))},
+				{Pos = portalCenter + Vector3.new(-2, 5, 9), Size = Vector3.new(4, 1.2, 1.2), Rot = CFrame.Angles(0, math.rad(30), math.rad(5))}
+			}
+			for i, spec in ipairs(ribSpecs) do
+				local rib = CreatePart("CryptBone_" .. i, spec.Size, spec.Pos, ribColor, ribMaterial, pathFolder)
+				rib.CanCollide = false
+				rib.CFrame = CFrame.new(spec.Pos) * spec.Rot
+			end
+
+			-- Portal Plane (facing down the path: -X direction)
+			local spawnDir = Vector3.new(-1, 0, 0)
+			local cf = CFrame.lookAt(portalCenter - spawnDir * 0.5, portalCenter + spawnDir * 0.5)
+			CreatePortalEffects(
+				"CryptPortalPlane",
+				Vector3.new(16, 16, 0.5),
+				cf,
+				Color3.fromRGB(130, 0, 255),
+				Color3.fromRGB(220, 100, 255),
+				Color3.fromRGB(80, 0, 150),
+				pathFolder
+			)
+		elseif pathName == "DragonPass" then
+			-- Volcanic Basalt Pillars, Lintel, and Magma Cracks
+			local pL = CreatePart("DragonPillarLeft", Vector3.new(6, 20, 6), portalCenter + Vector3.new(-12, 1, 0), Color3.fromRGB(15, 15, 18), Enum.Material.Basalt, pathFolder)
+			local pR = CreatePart("DragonPillarRight", Vector3.new(6, 20, 6), portalCenter + Vector3.new(12, 1, 0), Color3.fromRGB(15, 15, 18), Enum.Material.Basalt, pathFolder)
+			local lintel = CreatePart("DragonLintel", Vector3.new(30, 6, 6), portalCenter + Vector3.new(0, 11, 0), Color3.fromRGB(20, 18, 20), Enum.Material.Basalt, pathFolder)
+			
+			-- Glowing magma veins on pillars
+			local veinColor = Color3.fromRGB(255, 60, 0)
+			CreatePart("MagmaVeinL1", Vector3.new(0.6, 14, 0.2), portalCenter + Vector3.new(-12, 1, -3.1), veinColor, Enum.Material.Neon, pathFolder)
+			CreatePart("MagmaVeinL2", Vector3.new(0.6, 10, 0.2), portalCenter + Vector3.new(-13.5, -1, -3.1), veinColor, Enum.Material.Neon, pathFolder)
+			CreatePart("MagmaVeinR1", Vector3.new(0.6, 14, 0.2), portalCenter + Vector3.new(12, 1, -3.1), veinColor, Enum.Material.Neon, pathFolder)
+			CreatePart("MagmaVeinR2", Vector3.new(0.6, 10, 0.2), portalCenter + Vector3.new(13.5, -1, -3.1), veinColor, Enum.Material.Neon, pathFolder)
+
+			-- Left Demon Horn
+			local hL1 = CreatePart("HornL1", Vector3.new(4, 6, 4), portalCenter + Vector3.new(-10, 16.5, 0), Color3.fromRGB(15, 15, 18), Enum.Material.Basalt, pathFolder)
+			hL1.CFrame = CFrame.new(portalCenter + Vector3.new(-10, 16.5, 0)) * CFrame.Angles(0, 0, math.rad(-20))
+			local hL2 = CreatePart("HornL2", Vector3.new(3, 5, 3), portalCenter + Vector3.new(-8, 21.5, 0), Color3.fromRGB(15, 15, 18), Enum.Material.Basalt, pathFolder)
+			hL2.CFrame = hL1.CFrame * CFrame.new(0, 5, 0) * CFrame.Angles(0, 0, math.rad(-20))
+			local hL3 = CreatePart("HornL3", Vector3.new(2, 4, 2), portalCenter + Vector3.new(-5, 25.5, 0), Color3.fromRGB(255, 60, 0), Enum.Material.Neon, pathFolder)
+			hL3.CFrame = hL2.CFrame * CFrame.new(0, 4, 0) * CFrame.Angles(0, 0, math.rad(-25))
+
+			-- Right Demon Horn
+			local hR1 = CreatePart("HornR1", Vector3.new(4, 6, 4), portalCenter + Vector3.new(10, 16.5, 0), Color3.fromRGB(15, 15, 18), Enum.Material.Basalt, pathFolder)
+			hR1.CFrame = CFrame.new(portalCenter + Vector3.new(10, 16.5, 0)) * CFrame.Angles(0, 0, math.rad(20))
+			local hR2 = CreatePart("HornR2", Vector3.new(3, 5, 3), portalCenter + Vector3.new(8, 21.5, 0), Color3.fromRGB(15, 15, 18), Enum.Material.Basalt, pathFolder)
+			hR2.CFrame = hR1.CFrame * CFrame.new(0, 5, 0) * CFrame.Angles(0, 0, math.rad(20))
+			local hR3 = CreatePart("HornR3", Vector3.new(2, 4, 2), portalCenter + Vector3.new(5, 25.5, 0), Color3.fromRGB(255, 60, 0), Enum.Material.Neon, pathFolder)
+			hR3.CFrame = hR2.CFrame * CFrame.new(0, 4, 0) * CFrame.Angles(0, 0, math.rad(25))
+
+			-- Portal Plane (facing down the path: -Z direction)
+			local spawnDir = Vector3.new(0, 0, -1)
+			local cf = CFrame.lookAt(portalCenter - spawnDir * 0.5, portalCenter + spawnDir * 0.5)
+			CreatePortalEffects(
+				"DragonPortalPlane",
+				Vector3.new(18, 16, 0.5),
+				cf,
+				Color3.fromRGB(255, 50, 0),
+				Color3.fromRGB(255, 150, 0),
+				Color3.fromRGB(180, 0, 0),
+				pathFolder
+			)
+
 		end
 	end
 

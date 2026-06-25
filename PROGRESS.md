@@ -9,12 +9,12 @@
 
 | Field | Value |
 |---|---|
-| **Current Version** | v0.3.7 |
+| **Current Version** | v0.3.10 |
 | **Phase** | ⚙️ Core Systems |
 | **Last Updated** | June 2026 |
-| **Last GitHub Commit** | feat: straighten forest and undead paths to match dragon pass |
+| **Last GitHub Commit** | fix: remove dragon gate and add castle illumination |
 | **Branch** | `main` |
-| **Active Feature** | Straight Map Paths and Symmetrical Pedestals |
+| **Active Feature** | Keep Illumination and Gate Removal |
 | **Blocking Issues** | None |
 
 ---
@@ -145,6 +145,69 @@ Track every planned feature here. Status updates as development progresses.
 ## 📋 Version History
 
 Every GitHub push gets logged here. Most recent at the top.
+
+---
+
+### v0.3.10 — Keep Illumination and Gate Removal
+**Date:** June 2026
+**GitHub Commit:** `fix: remove dragon gate and add castle illumination`
+**Branch:** `main`
+**Type:** 🗺️ Map Bugfix & Polish
+
+**What was added:**
+- Removed the solid `DragonGate` part from the entrance of the Castle Keep on the lava path entirely so the road is completely open.
+- Added a soft blue `PointLight` (Range 45, Brightness 1.5) to the central `KingdomCrystal` to illuminate the altar.
+- Spawned 4 corner torches in the Castle Keep floor for subtle warm illumination.
+
+**What was removed:**
+- `DragonGate` part from the Castle Keep entrance.
+
+**Rollbacks:** None
+
+**Notes:** Castle interior is now illuminated, and the lava path entrance is cleared of solid blockages.
+
+---
+
+### v0.3.9 — Active Portal Particles and Dragon Gate Relocation
+**Date:** June 2026
+**GitHub Commit:** `fix: move dragon gate to keep entrance and active portal particles`
+**Branch:** `main`
+**Type:** 🗺️ Map Bugfix
+
+**What was added:**
+- Moved the physical solid `DragonGate` part from the Z=200 spawn point to the Z=47 Castle Keep entrance to prevent players from being blocked at the spawn portal.
+- Configured portal plane orientations facing along the path directions.
+- Adjusted the `ParticleEmitter` to emit outwards (`Enum.NormalId.Front`) with an increased rate of 75 and initial speed of 4-9 to make the portals look highly active and magical.
+
+**What was removed:**
+- Solid gate block at spawn point.
+
+**Rollbacks:** None
+
+**Notes:** Dragon gate still blocks path until Wave 10, but at the Keep entrance instead of spawn point.
+
+---
+
+### v0.3.8 — Themed Glowing Spawn Gates and Portals
+**Date:** June 2026
+**GitHub Commit:** `feat: implement themed glowing spawn gates with portal particle effects`
+**Branch:** `main`
+**Type:** 🗺️ Map Aesthetics
+
+**What was added:**
+- Added custom biome-themed portal gates at spawn points for all paths.
+- Helper function `CreatePortalEffects` generates glowing Neon portal planes, particle emitters, and point lights.
+- **Forest Path Gate:** Styled as corrupted logs with glowing green neon thorns and toxic spore particles.
+- **Undead Graveyard Gate:** Styled as dark stone crypt arches with bone-colored skeletal rib cages, gothic spires, and purple sparkles.
+- **Dragon Pass Gate:** Styled as magma-veined basalt structures with large curving demon horns and fire particles.
+- Balanced and offset all portal planes so they nest perfectly within the gatehouse pillars.
+
+**What was removed:**
+- Generic non-themed gates.
+
+**Rollbacks:** None
+
+**Notes:** All gates now have active visual effects matching their path theme.
 
 ---
 
