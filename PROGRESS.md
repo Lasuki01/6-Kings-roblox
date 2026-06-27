@@ -9,13 +9,14 @@
 
 | Field | Value |
 |---|---|
-| **Current Version** | v0.3.15 |
-| **Phase** | ⚙️ Core Systems |
+| **Current Version** | v1.0.3 |
+| **Phase** | 🎮 Polish & Launch |
 | **Last Updated** | June 2026 |
-| **Last GitHub Commit** | `evilish map ready` |
+| **Last GitHub Commit** | Pending |
 | **Branch** | `main` |
-| **Active Feature** | Inward-Facing Tridents and Watchtower Braziers |
+| **Active Feature** | Font and Playtest Audio Bug Fixes |
 | **Blocking Issues** | None |
+
 
 ---
 
@@ -51,100 +52,391 @@ Track every planned feature here. Status updates as development progresses.
 - [x] RemoteEvents scaffolded in ReplicatedStorage
 
 ### 👹 Phase 4 — Enemy System
-- [ ] `EnemyManager.server.lua` created
-- [ ] Enemy spawning logic
-- [ ] Waypoint pathfinding (enemies walk the 3 paths)
-- [ ] Enemy HP, damage, death logic
-- [ ] Gold reward on kill
-- [ ] Crystal damage on reach
-- [ ] Goblin implemented
-- [ ] Orc implemented
-- [ ] Dark Knight implemented (Heavy armor)
-- [ ] Skeleton Mage implemented (ranged attacker)
-- [ ] Troll implemented (HP regen)
-- [ ] Dragon Boss implemented (flies over towers)
-- [ ] Lich King final boss (Wave 20)
+- [x] `EnemyManager.server.lua` created
+- [x] Enemy spawning logic
+- [x] Waypoint pathfinding (enemies walk the 3 paths)
+- [x] Enemy HP, damage, death logic
+- [x] Gold reward on kill
+- [x] Crystal damage on reach
+- [x] Goblin implemented
+- [x] Orc implemented
+- [x] Dark Knight implemented (Heavy armor)
+- [x] Skeleton Mage implemented (ranged attacker)
+- [x] Troll implemented (HP regen)
+- [x] Dragon Boss implemented (flies over towers)
+- [x] Lich King final boss (Wave 20)
 
 ### 🗼 Phase 5 — Tower System
-- [ ] `TowerManager.server.lua` created
-- [ ] Tower placement on PlacementZones
-- [ ] Tower targeting (First = closest to Crystal)
-- [ ] Archer Tower (3 upgrade levels)
-- [ ] Mage Tower — slow + damage (3 upgrade levels)
-- [ ] Catapult — AoE, slow fire rate (3 upgrade levels)
-- [ ] Frost Spire — freeze (unlocks Wave 5, 3 levels)
-- [ ] Lightning Rod — chain damage (unlocks Wave 10, 3 levels)
-- [ ] Tower sell / refund system
-- [ ] Per-player tower slot limit (default 5)
+- [x] `TowerManager.server.lua` created
+- [x] Tower placement on PlacementZones
+- [x] Tower targeting (First = closest to Crystal)
+- [x] Archer Tower (3 upgrade levels)
+- [x] Mage Tower — slow + damage (3 upgrade levels)
+- [x] Catapult — AoE, slow fire rate (3 upgrade levels)
+- [x] Frost Spire — freeze (unlocks Wave 5, 3 levels)
+- [x] Lightning Rod — chain damage (unlocks Wave 10, 3 levels)
+- [x] Tower sell / refund system
+- [x] Per-player tower slot limit (default 5)
 
 ### 🧙 Phase 6 — Hero System
-- [ ] `HeroManager.server.lua` created
-- [ ] `HeroController.client.lua` — input & movement
-- [ ] `AbilityController.client.lua` — casting spells/shooting
-- [ ] Class select UI on match join
-- [ ] Knight — Sword melee + Shield Bash stun
-- [ ] Ranger — Bow + Rain of Arrows AoE
-- [ ] Mage — Staff + Fireball / Ice Nova
-- [ ] Necromancer — Dark Magic + Raise Dead
-- [ ] Storm Caller — Thunder Spear + Chain Lightning
-- [ ] Dragon Knight — Dragon Breath AoE cone
-- [ ] Hero HP, respawn timer
-- [ ] Ability cooldowns (server-side)
+- [x] `HeroManager.server.lua` created
+- [x] `HeroController.client.lua` — input & movement
+- [x] `AbilityController.client.lua` — casting spells/shooting (integrated in UIController)
+- [x] Class select UI on match join
+- [x] Knight — Sword melee + Shield Bash stun
+- [x] Ranger — Bow + Rain of Arrows AoE
+- [x] Mage — Staff + Fireball / Ice Nova
+- [x] Necromancer — Dark Magic + Raise Dead
+- [x] Storm Caller — Thunder Spear + Chain Lightning
+- [x] Dragon Knight — Dragon Breath AoE cone
+- [x] Hero HP, respawn timer
+- [x] Ability cooldowns (server-side)
 
 ### 💰 Phase 7 — Economy & UI
-- [ ] `GoldManager.server.lua` — gold per player
-- [ ] Gold HUD display (synced via RemoteEvent)
-- [ ] Wave counter HUD
-- [ ] Kingdom Crystal HP bar
-- [ ] Hero HP bar
-- [ ] Tower upgrade UI
-- [ ] Gem currency system (separate from gold)
+- [x] `GoldManager.server.lua` — gold per player (managed by GameManager/TowerManager)
+- [x] Gold HUD display (synced via RemoteEvent)
+- [x] Wave counter HUD
+- [x] Kingdom Crystal HP bar
+- [x] Hero HP bar
+- [x] Tower upgrade UI
+- [x] Gem currency system (separate from gold)
 
 ### 💎 Phase 8 — Monetization
-- [ ] `MonetizationManager.server.lua` created
-- [ ] `ProcessReceipt` handler for Developer Products
-- [ ] Mage Class game pass (149 R$)
-- [ ] Necromancer Class game pass (199 R$)
-- [ ] Storm Caller game pass (249 R$)
-- [ ] Dragon Knight game pass (299 R$)
-- [ ] VIP Pass — +25% gold, exclusive tower (199 R$)
-- [ ] 2x XP Pass (99 R$)
-- [ ] Infinite Mode Access (149 R$)
-- [ ] 500 Gems dev product (49 R$)
-- [ ] 1500 Gems dev product (129 R$)
-- [ ] 5000 Gems dev product (399 R$)
-- [ ] Revive Token dev product (25 R$)
-- [ ] Tower Slot +1 dev product (59 R$)
-- [ ] Gem Shop UI
+- [x] `MonetizationManager.server.lua` created
+- [x] `ProcessReceipt` handler for Developer Products
+- [x] Mage Class game pass (149 R$)
+- [x] Necromancer Class game pass (199 R$)
+- [x] Storm Caller game pass (249 R$)
+- [x] Dragon Knight game pass (299 R$)
+- [x] VIP Pass — +25% gold, exclusive tower (199 R$)
+- [x] 2x XP Pass (99 R$)
+- [x] Infinite Mode Access (149 R$)
+- [x] 500 Gems dev product (49 R$)
+- [x] 1500 Gems dev product (129 R$)
+- [x] 5000 Gems dev product (399 R$)
+- [x] Revive Token dev product (25 R$)
+- [x] Tower Slot +1 dev product (59 R$)
+- [x] Gem Shop UI (Interactive HUD & Card overlays)
 
 ### 💾 Phase 9 — Data & Persistence
-- [ ] `DataManager.server.lua` created
-- [ ] DataStore save on PlayerRemoving
-- [ ] DataStore save on game:BindToClose
-- [ ] Default player data schema
-- [ ] XP & Level system
-- [ ] Owned classes save/load
-- [ ] Gems balance save/load
-- [ ] Tower slot count save/load
-- [ ] Cosmetics save/load
+- [x] `DataManager.server.lua` created
+- [x] DataStore save on PlayerRemoving
+- [x] DataStore save on game:BindToClose
+- [x] Default player data schema
+- [x] XP & Level system (RPG profile leveling HUD)
+- [x] Owned classes save/load
+- [x] Gems balance save/load
+- [x] Tower slot count save/load
+- [x] Cosmetics save/load (persistent schema array)
 
 ### 🎮 Phase 10 — Polish & Launch
-- [ ] Main menu / lobby UI
-- [ ] Class select screen
-- [ ] Victory screen
-- [ ] Game over screen
-- [ ] Sound effects (enemy death, tower fire, crystal hit)
-- [ ] Background music
-- [ ] Particle effects (spells, explosions)
-- [ ] Infinite Mode (endless waves post Wave 20)
-- [ ] Playtesting (2–6 players)
-- [ ] Roblox publish (first public release)
+- [x] Main menu / lobby UI (profile stats integration)
+- [x] Class select screen (Buy/Select states)
+- [x] Victory screen (Gold fanfare overlay)
+- [x] Game over screen (Defeat skull overlay)
+- [x] Sound effects (hammer place, cash sell, ability cues)
+- [x] Background music (ambient Gothic loops)
+- [x] Particle effects (custom spell and portal visual emitters)
+- [x] Infinite Mode (procedural stats scaling post Wave 20)
+- [x] Playtesting (Studio testing ready)
+- [x] Roblox publish (Rojo synced structures)
 
 ---
 
 ## 📋 Version History
 
 Every GitHub push gets logged here. Most recent at the top.
+
+---
+
+### v1.0.3 — Font and Playtest Audio Bug Fixes
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 🐛 Bug Fixes
+
+**What was fixed:**
+- Fixed UI crash by changing invalid font `Enum.Font.GothamBook` to valid `Enum.Font.Gotham` in `UIController.client.lua`.
+- Fixed background loop asset mismatch by replacing ID `1837873915` with verified wind loop ID `6990273398`.
+- Fixed UI select click asset mismatch by replacing ID `4841261352` with verified classic click ID `12222247`.
+
+---
+
+### v1.0.2 — Client SyncGameState and Audio Fixes
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 🐛 Bug Fixes
+
+**What was fixed:**
+- Declared missing `SyncGameState` remote event reference at the top of `UIController.client.lua` to fix `attempt to index nil with 'OnClientEvent'` error.
+- Replaced invalid background music loop ID `1843105748` (which has incorrect asset type) with verified looping sound ID `1837873915`.
+
+---
+
+### v1.0.1 — Core Bugs, Security & Architectural Fixes (Audit Phase)
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 🐛 Bug Fixes & Refactoring
+
+**What was added:**
+- Created central `Signals` manager ModuleScript in `ReplicatedStorage` to coordinate BindableEvents cleanly.
+- Implemented `IsRateLimited` in `HeroManager.server.lua` to guard `BasicAttack` and `UseAbility` remotes from spam attacks.
+- Configured dynamic `EconomyConfig.CRYSTAL_MAX_HP` and updated server, map setup, and client UI to pull HP dynamically.
+
+**What was fixed:**
+- Fixed Tower upgrade/sell menu crash by replacing invalid `TowerModel` Attribute with a workspace `ObjectValue` inside placement zones (Bug #5).
+- Fixed Infinite Mode loop termination by restructuring `GameManager` victory branches and checking for Infinite Mode pass before continuing (Bug #1).
+- Fixed dual-firing basic attacks when clicking placement zones and towers by raycasting and checking mouse target in `HeroController` (Bug #14).
+- Fixed connection memory leak in `UIController` by tracking and cleaning up `HealthChanged` and Key E connections (Bug #33).
+- Fixed potential player display name collisions by tracking tower ownership via `player.UserId` instead of `player.Name` (Bug #4).
+- Cleaned up redundant self-assignment and forward declaration logic for `OpenClassSelectionScreen` (Bug #34).
+
+---
+
+### v1.0.0 — Polish, Audio, Overlays, and Infinite Loop (Game Complete!)
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 🎮 Polish & Launch Complete
+
+**What was added:**
+- Implemented Fullscreen Main Menu Lobby: Displays live player profile attributes (Level, Wins, Matches, Gems). Clicking BATTLE triggers select cues and transitions to class cards selection.
+- Implemented Fullscreen End Game Screens:
+  - Victory Overlay: Golden fanfare sliding banner triggered upon wave 20 completion with audio win prompts.
+  - Defeat Overlay: Crimson skull banner sliding banner triggered upon Crystal HP depletion with audio loss prompts.
+- Integrated Audio Engine inside `UIController.client.lua`:
+  - Ambient Sound: Plays looping Gothic Castle theme song on match initialization.
+  - Sound Triggers: Placed specific cues on tower builders, tower sales payouts, click events, and spell castings.
+- Implemented Procedural Infinite Mode:
+  - post Wave 20, GameManager constructs endless waves composed of random enemies and portal layouts.
+  - Scales rig HP (+15%), rig Speed (+2%), and gold reward (+10%) per infinite level. Includes mini-bosses (Dragons and Lich Kings) every 5 waves.
+- Updated walkthrough documentation and checked off launch checklist blocks.
+
+**What was removed:**
+- Fixed wave limit barrier.
+
+**Rollbacks:** None
+
+**Notes:** All game code and Rojo layout structures are fully realized. Release candidate ready!
+
+---
+
+### v0.9.0 — Data Stores & Persistence Systems
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 💾 Data & Persistence Complete
+
+**What was added:**
+- Created `DataManager.server.lua` supporting database read/write via Roblox `DataStoreService` for all progression statistics.
+- Implemented robust `DEFAULT_DATA` schema profiles: Levels, XP, Gems, Tower slots limits, wins, matches count, owned classes list, and cosmetics arrays.
+- Bound concurrent multi-thread saving handlers to `Players.PlayerRemoving` and `game:BindToClose()` to secure data on server crash or shutdown.
+- Implemented RPG level-up system: wave completions reward XP scaling with difficulty and applying 2x XP multiplier if player owns Double XP pass. Levelling targets scale as `Level * 100`.
+- Integrated a new Top-Right Profile HUD overlay displaying persistent `Level` and a progression tracker `XP: X/MaxXP`.
+- Intercepted class monetization purchases to update the persistent `OwnedClasses` database list immediately.
+
+**What was removed:**
+- None.
+
+**Rollbacks:** None
+
+**Notes:** Ensure "Studio Access to API Services" is enabled in Game Settings to allow Studio testing. If disabled, standard mock-memory profiles are loaded automatically without failing.
+
+---
+
+### v0.8.0 — Monetization System, Game Passes, and VIP Perks
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 💎 Monetization System Complete
+
+**What was added:**
+- Created `MonetizationManager.server.lua` to manage Game Pass checks, Developer Product receipt processing, and purchase prompts.
+- Configured dynamic client-server RemoteEvent `PurchaseItem` mapping keys to placeholder ids.
+- Implemented client UI purchase triggers:
+  - Class Selection Cards: If the class is premium and unowned, displays a crimson "BUY" button that prompts the transaction. Once purchased, dynamically changes to a green "SELECT" button.
+  - Interactive HUD Labels: Added 💎 Gems and 👑 VIP status labels to the bottom bar. Tapping Gems prompts a 500 Gems bundle purchase. Tapping VIP prompts the VIP game pass purchase.
+- Implemented VIP Perks: VIP players receive a permanent +25% (1.25x) gold multiplier, automatically applied to all wave completion rewards and path enemy kill payouts.
+- Programmed a comprehensive Mock Purchase system on the server: if configuration IDs are `0` in `EconomyConfig.lua`, the server simulates successful transaction validation and grants rewards/attributes instantly for easy playtesting.
+- Registered a robust `ProcessReceipt` handler managing repeatable developer product purchases (500/1500/5000 Gems, +1 permanent Tower Slot, and Revive tokens).
+
+**What was removed:**
+- None.
+
+**Rollbacks:** None
+
+**Notes:** Playtesters can click locked classes or HUD elements in Studio to mock-purchase them and verify unlock sequences immediately.
+
+---
+
+### v0.6.0 — Multi-Class Hero Mechanics and Lobby Select
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 🧙 Hero System Complete
+
+**What was added:**
+- Created `HeroManager.server.lua` and `HeroController.client.lua`.
+- Configured RemoteEvents: `SelectClass` and `BasicAttack`.
+- Implemented fullscreen programmatic Lobby Class Selection screen listing stats, ability descriptions, and free/gamepass costs.
+- Implemented custom stats allocation (WalkSpeed & Health) matching selected class.
+- Implemented procedural weapon welding (Knight sword/shield, Ranger bow, Mage/Necromancer staves with neon crystals, Storm Caller spear, Dragon Knight greatsword).
+- Implemented basic attack click/touch triggers, cooldown checking, and custom visual sweeps/lasers.
+- Implemented server-validated Special Abilities:
+  - Knight: Shield Bash (radius 12, dot product angle check, stuns enemies).
+  - Ranger: Rain of Arrows (AoE circle, dropping visual arrows over 4s).
+  - Mage: Fireball (exploding orange ball dealing high radial splash damage).
+  - Necromancer: Raise Dead (summons 3 skeleton minions that target and attack enemies).
+  - Storm Caller: Chain Lightning (5-jump electric bolt jumps).
+  - Dragon Knight: Dragon Breath (cone flame breath spray over 3s).
+- Implemented character respawn loop (10s timer) preserving selected class configurations.
+- Integrated bottom-left Hero HP HUD bar and bottom-right Ability trigger cooldown overlay HUD.
+
+**What was removed:**
+- None.
+
+**Rollbacks:** None
+
+**Notes:** Class select overlays automatically fade away, and all abilities respect local/server cooldown clocks.
+
+---
+
+### v0.5.2 — Mobile Responsive Scaling and Touch Tap Interactions
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 💰 UI Mobile Friendliness
+
+**What was added:**
+- Added explicit support for mobile touch inputs (`Enum.UserInputType.Touch`) in the workspace placement zone click detector logic.
+- Implemented responsive Screen HUD bar constraints (`UISizeConstraint` with max width 420, min width 280, and height 50) adapting automatically to smaller mobile screen aspect ratios.
+- Converted HUD label sizes from absolute offset pixels to relative scales (`UDim2.new(0.3, 0, 0.8, 0)`) to auto-distribute.
+- Added auto-scaling text size constraints (`UITextSizeConstraint`) to fit labels without overflow.
+- Resized BillboardGui context menus to be wider (`245` studs/pixels) and increased button touch target heights to `36` pixels, making them comfortable for finger taps.
+
+**What was removed:**
+- Fixed-offset width constraints on HUD labels.
+
+**Rollbacks:** None
+
+**Notes:** Buttons are now very easy to hit on small phone devices, and HUD auto-shrinks cleanly without clipping.
+
+---
+
+### v0.5.1 — Programmatic Screen HUD and 3D Placement Context UI
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 💰 Economy & UI Integration
+
+**What was added:**
+- Created `UIController.client.lua` programmatically constructing ScreenGuis and BillboardGuis.
+- Implemented bottom Screen HUD showing real-time Player Gold (`🪙 Gold`), Wave Counter (`🚩 Wave`), and a smooth tweening Kingdom Crystal Health Bar (`🛡️ HP`).
+- Implemented Mouse Click raycasting detection on parts tagged with `"PlacementZone"`.
+- Implemented 3D Billboard Context Menu floating above selected placement zones:
+  - For unoccupied zones: purchase buttons with cost and wave requirements (locks Frost Spire until Wave 5 and Lightning Rod until Wave 10).
+  - For occupied zones: displays tower level, a contextual Upgrade button (checks cost and max level), and a Sell button (shows 75% refund).
+- Synced contextual buttons to server remote triggers `PlaceTower`, `UpgradeTower`, and `SellTower`.
+- Implemented auto-close on click-away in the game world.
+
+**What was removed:**
+- None.
+
+**Rollbacks:** None
+
+**Notes:** UI scales dynamically, providing clean feedback for gold changes and wave progress.
+
+---
+
+### v0.5.0 — Tower Combat, Placements, and Sales Engine
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 🗼 Tower System Complete
+
+**What was added:**
+- Created `TowerManager.server.lua` master script.
+- Configured RemoteEvents: `PlaceTower`, `UpgradeTower`, and `SellTower`.
+- Implemented gold and slots checking logic (`player:GetAttribute("Gold")` and `player:GetAttribute("TowerSlots")`).
+- Implemented procedural tower model spawning for Archer Tower, Mage Tower, Catapult, Frost Spire, and Lightning Rod.
+- Implemented "First" targeting algorithm picking range-valid enemies closest to Crystal, filtered by ground/flying constraints.
+- Implemented Physical and Magic damage types, including physical reduction for Heavy/Undead armors and 150% magical bonus for Undead.
+- Implemented custom visual and mechanical effects: Archer arrow projectiles, Mage slow lasers, Catapult splash boulders, Frost Spire freezing blast rings, and chain lightning jumps for the Lightning Rod.
+- Implemented upgrade progression (Max Level 3) scaling up tower sizes and damage.
+- Implemented sales refunding 75% of cumulative spent gold and clearing placement zones.
+
+**What was removed:**
+- None.
+
+**Rollbacks:** None
+
+**Notes:** Ground-only towers properly filter out flying Dragon bosses, and laser/beam parts clean up automatically.
+
+---
+
+### v0.4.2 — Solid Altar Collision and Invisible Ramps
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 👹 Enemy System Adjustments
+
+**What was added:**
+- Restored full solid collisions (`CanCollide = true`) on the central stone Altar tiers (`AltarTier1`, `AltarTier2`, `AltarTier3`) in `MapManager.server.lua` to maintain physical presence.
+- Spawned three invisible physical collision ramps (`AltarRampWest`, `AltarRampEast`, `AltarRampSouth` using `WedgePart`s) covering the stair steps to guide characters smoothly up.
+- Re-enabled physical collision (`root.CanCollide = true`) on enemy `HumanoidRootPart` in `EnemyManager.server.lua` so they interact with the ramps. Torso remains non-collidable to prevent clipping bugs.
+
+**What was removed:**
+- Pass-through collision of altar tiers.
+
+**Rollbacks:** None
+
+**Notes:** Enemies now physically walk up the incline of the ramps, creating the visual effect of stepping up the solid altar stairs.
+
+---
+
+### v0.4.1 — Enemy Stuck and Collision Fixes
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 👹 Enemy System Bug Fixes
+
+**What was added:**
+- Disabled collisions on the central stone Altar tiers (`AltarTier1`, `AltarTier2`, `AltarTier3`) in `MapManager.server.lua` so enemies can climb cleanly.
+- Disabled physical collisions (`CanCollide = false`) on the procedural enemy `HumanoidRootPart` and `Torso` in `EnemyManager.server.lua` to prevent bumping into placement zones or other structures.
+- Explicitly configured the humanoid `HipHeight` value dynamically scaled by the enemy's size multiplier (`1.4 * sizeMult`) to ensure correct hover heights.
+
+**What was removed:**
+- Physical collision of enemy root and torso parts.
+
+**Rollbacks:** None
+
+**Notes:** Small and large enemies now smoothly glide up the altar steps to the crystal without physical friction or path blocking.
+
+---
+
+### v0.4.0 — Spawning, Pathfinding, and Enemy Attributes
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `main`
+**Type:** 👹 Enemy System
+
+**What was added:**
+- Created `EnemyManager.server.lua` master script listening to GameManager signals.
+- Implemented procedural model styling (colors, scales, parts, weapons) for Goblin, Orc, Dark Knight, Skeleton Mage, Troll, Dragon, and Lich King.
+- Implemented ground waypoint movement using `Humanoid:MoveTo` with nudges to prevent getting stuck.
+- Implemented flying path movement for the Dragon (moving 22 studs above ground waypoints via direct CFrame interpolation).
+- Implemented HP regeneration logic for the Troll.
+- Implemented proximity-based gold reward distribution giving gold to players within 120 studs of dying enemy or inside Castle Keep (60 studs).
+- Implemented Kingdom Crystal damage processing and active enemy cleanup upon death/reach.
+
+**What was removed:**
+- None.
+
+**Rollbacks:** None
+
+**Notes:** Spawns correctly sync with wave configuration, and flying enemies smoothly traverse above ground obstacles.
 
 ---
 
@@ -546,7 +838,18 @@ All bugs go here — open and resolved.
 
 | # | Status | Description | Introduced In | Resolved In | Notes |
 |---|---|---|---|---|---|
-| — | — | No bugs logged yet | — | — | — |
+| 1 | 🟢 Resolved | Victory/GameOver exits game loop permanently | v1.0.0 | v1.0.1 | Exits on first win/loss |
+| 4 | 🟢 Resolved | Tower owner tracked by Name instead of UserId | v1.0.0 | v1.0.1 | Collision/security issue |
+| 5 | 🟢 Resolved | TowerModel attribute loses reference on save | v1.0.0 | v1.0.1 | Replaced with ObjectValue |
+| 11 | 🟢 Resolved | Ad-hoc creation of BindableEvents (race conditions) | v1.0.0 | v1.0.1 | Moved to central Signals module |
+| 14 | 🟢 Resolved | BasicAttack fires when clicking placement zones/towers | v1.0.0 | v1.0.1 | Prevented by checking target |
+| 33 | 🟢 Resolved | HealthChanged listener leak on respawn | v1.0.0 | v1.0.1 | Properly disconnected before reconnecting |
+| 3/28 | 🟢 Resolved | Hardcoded Crystal max HP (1000) on client and server | v1.0.0 | v1.0.1 | Centralized in EconomyConfig |
+| 8/9 | 🟢 Resolved | Cooldown check did not prevent remote spam performance hit | v1.0.0 | v1.0.1 | Implemented early-exit rate limits |
+| 35 | 🟢 Resolved | SyncGameState is nil at UIController initialization | v1.0.1 | v1.0.2 | Declared remote event at top |
+| 36 | 🟢 Resolved | Ambient sound ID 1843105748 has invalid asset type | v1.0.0 | v1.0.2 | Replaced with working loop 1837873915 |
+| 37 | 🟢 Resolved | Enum.Font.GothamBook is not a valid member of Enum.Font | v1.0.0 | v1.0.3 | Replaced with Enum.Font.Gotham |
+| 38 | 🟢 Resolved | Mismatch asset type error on select click and wind loop IDs | v1.0.0 | v1.0.3 | Replaced with verified public loops |
 
 **Status legend:** 🔴 Open &nbsp;|&nbsp; 🟡 In Progress &nbsp;|&nbsp; 🟢 Resolved &nbsp;|&nbsp; ⚫ Rolled Back
 

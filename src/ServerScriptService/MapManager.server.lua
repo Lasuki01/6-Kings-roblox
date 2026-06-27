@@ -6,9 +6,14 @@
 
 local CollectionService = game:GetService("CollectionService")
 local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Configuration modules
+local Config = ReplicatedStorage:WaitForChild("Modules"):WaitForChild("Config")
+local EconomyConfig = require(Config:WaitForChild("EconomyConfig"))
 
 -- Configuration Constants
-local CRYSTAL_MAX_HP = 1000
+local CRYSTAL_MAX_HP = EconomyConfig.CRYSTAL_MAX_HP
 local PATH_WIDTH = 16
 local PATH_HEIGHT = 3.5
 
@@ -749,6 +754,36 @@ local function InitializeMap()
 	altar1.CastShadow = true
 	altar2.CastShadow = true
 	altar3.CastShadow = true
+
+	-- Spawn invisible ramps over the altar stairs so Goblins and other enemies climb physically
+	local rampsFolder = Instance.new("Folder")
+	rampsFolder.Name = "AltarRamps"
+	rampsFolder.Parent = mapModel
+
+	local function CreateRamp(name, size, pos, rotationY)
+		local ramp = Instance.new("WedgePart")
+		ramp.Name = name
+		ramp.Size = size
+		ramp.Position = pos
+		ramp.CFrame = CFrame.new(pos) * CFrame.Angles(0, math.rad(rotationY), 0)
+		ramp.Transparency = 1 -- completely invisible
+		ramp.CanCollide = true
+		ramp.Anchored = true
+		ramp.CastShadow = false
+		ramp.TopSurface = Enum.SurfaceType.Smooth
+		ramp.BottomSurface = Enum.SurfaceType.Smooth
+		ramp.Parent = rampsFolder
+		return ramp
+	end
+
+	-- West Ramp: climbs from West (-X) to East (+X), thin end at X = -21, thick end at X = -5
+	CreateRamp("AltarRampWest", Vector3.new(16, 6, 16), Vector3.new(-13, 7, 0), 90)
+
+	-- East Ramp: climbs from East (+X) to West (-X), thin end at X = 21, thick end at X = 5
+	CreateRamp("AltarRampEast", Vector3.new(16, 6, 16), Vector3.new(13, 7, 0), -90)
+
+	-- South Ramp: climbs from South (+Z) to North (-Z), thin end at Z = 21, thick end at Z = 5
+	CreateRamp("AltarRampSouth", Vector3.new(16, 6, 16), Vector3.new(0, 7, 13), 180)
 
 	-- Kingdom Crystal (Y bottom = 10, center Y = 16)
 	local crystal = CreatePart(
