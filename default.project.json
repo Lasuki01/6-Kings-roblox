@@ -46,6 +46,44 @@
             512
           ]
         }
+      },
+      "LobbySpawnFallback": {
+        "$className": "SpawnLocation",
+        "$properties": {
+          "Anchored": true,
+          "Position": [0, 151.5, 55],
+          "Size": [12, 1, 12],
+          "Color": [0, 0.59, 1],
+          "Material": "Neon",
+          "Transparency": 0.5,
+          "CanCollide": true,
+          "Neutral": true,
+          "Duration": 0,
+          "Enabled": true
+        }
+      },
+      "LobbyPlatform": {
+        "$className": "Part",
+        "$properties": {
+          "Anchored": true,
+          "CanCollide": true,
+          "Color": [
+            0.1176,
+            0.1098,
+            0.1372
+          ],
+          "Material": "Slate",
+          "Position": [
+            0,
+            150,
+            0
+          ],
+          "Size": [
+            160,
+            2,
+            160
+          ]
+        }
       }
     },
     "Lighting": {

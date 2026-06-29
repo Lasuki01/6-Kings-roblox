@@ -234,4 +234,29 @@ WaveConfig.Waves = {
 	}
 }
 
+-- ============================================
+-- DYNAMIC PATH SCALING
+-- Controls which paths are active based on player count,
+-- and how enemy stats scale with more players.
+-- ============================================
+
+-- Which paths are active at each player threshold
+-- Key = max player count for this tier
+WaveConfig.PATH_THRESHOLDS = {
+	{ MaxPlayers = 2, ActivePaths = { "ForestPath" } },
+	{ MaxPlayers = 4, ActivePaths = { "ForestPath", "UndeadPath" } },
+	{ MaxPlayers = 6, ActivePaths = { "ForestPath", "UndeadPath", "DragonPass" } },
+}
+
+-- Enemy stat multipliers per additional player (above 1)
+-- e.g. with 4 players: HP = base * (1 + 3 * 0.10) = base * 1.30
+WaveConfig.PLAYER_SCALING = {
+	HP_PER_PLAYER = 0.10,     -- +10% HP per player above 1
+	SPEED_PER_PLAYER = 0.05,  -- +5% Speed per player above 1
+}
+
+-- When a path is closed, enemies assigned to it get rerouted
+-- to the first available path in this priority order
+WaveConfig.PATH_PRIORITY = { "ForestPath", "UndeadPath", "DragonPass" }
+
 return WaveConfig

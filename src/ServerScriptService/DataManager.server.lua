@@ -34,6 +34,7 @@ local DEFAULT_DATA = {
 
 -- In-memory session cache for non-primitive tables (e.g. OwnedClasses list)
 local sessionData = {}
+local activeSaves = {}
 
 -- Load player data
 local function LoadPlayerData(player)
@@ -97,8 +98,17 @@ end
 
 -- Save player data
 local function SavePlayerData(player)
+	if activeSaves[player] then
+		while activeSaves[player] do
+			task.wait(0.1)
+		end
+		return
+	end
+	
 	local data = sessionData[player]
 	if not data then return end
+	
+	activeSaves[player] = true
 	
 	-- Sync current values from player attributes back to table
 	data.XP = player:GetAttribute("XP") or 0
@@ -119,6 +129,8 @@ local function SavePlayerData(player)
 	else
 		warn("[DataManager] Failed to save player data for " .. player.Name .. ". Error: " .. tostring(err))
 	end
+	
+	activeSaves[player] = nil
 end
 
 -- Hook up XP and Leveling Up logic

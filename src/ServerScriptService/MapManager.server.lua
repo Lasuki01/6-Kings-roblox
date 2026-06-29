@@ -41,6 +41,371 @@ local function AddHighlight(part)
 	highlight.Parent = part
 end
 
+-- Helper: Add stone masonry bands on pillars
+local function AddPillarMasonryBands(pillar, mapModel)
+	local numBands = 5
+	for j = 1, numBands do
+		local yOffset = -pillar.Size.Y/2 + (pillar.Size.Y / (numBands + 1)) * j
+		local band = Instance.new("Part")
+		band.Name = pillar.Name .. "_StoneBand"
+		band.Size = pillar.Size + Vector3.new(0.2, 0.6, 0.2)
+		band.Position = pillar.Position + Vector3.new(0, yOffset, 0)
+		band.Color = Color3.fromRGB(50, 50, 53) -- darker stone
+		band.Material = Enum.Material.Slate
+		band.Anchored = true
+		band.CanCollide = true
+		band.CastShadow = true
+		band.Parent = mapModel
+	end
+end
+
+-- Helper: Spawn wall torch/sconce on a pillar
+local function SpawnPillarSconce(position, direction, parent)
+	-- Sconce bracket (slanted metal bar)
+	local bracket = CreatePart(
+		"PillarSconceBracket",
+		Vector3.new(0.5, 1.5, 0.5),
+		position,
+		Color3.fromRGB(35, 35, 38),
+		Enum.Material.Metal,
+		parent
+	)
+	bracket.CFrame = CFrame.new(position, position + direction) * CFrame.Angles(math.rad(-25), 0, 0)
+	bracket.CanCollide = false
+
+	-- Sconce bowl
+	local bowl = CreatePart(
+		"PillarSconceBowl",
+		Vector3.new(1.2, 0.6, 1.2),
+		bracket.Position + direction * 0.8 + Vector3.new(0, 0.8, 0),
+		Color3.fromRGB(50, 50, 52),
+		Enum.Material.Metal,
+		parent
+	)
+	bowl.CanCollide = false
+	bowl.CastShadow = false
+
+	-- Flame
+	local flame = CreatePart(
+		"PillarSconceFlame",
+		Vector3.new(0.6, 1.0, 0.6),
+		bowl.Position + Vector3.new(0, 0.6, 0),
+		Color3.fromRGB(255, 120, 0),
+		Enum.Material.Neon,
+		parent
+	)
+	flame.CanCollide = false
+	flame.Transparency = 0.5
+
+	-- PointLight
+	local light = Instance.new("PointLight")
+	light.Color = Color3.fromRGB(255, 150, 50)
+	light.Range = 20
+	light.Brightness = 2.0
+	light.Shadows = true
+	light.Parent = flame
+
+	-- Fire object
+	local fire = Instance.new("Fire")
+	fire.Color = Color3.fromRGB(255, 100, 0)
+	fire.SecondaryColor = Color3.fromRGB(255, 180, 50)
+	fire.Size = 2.5
+	fire.Heat = 5
+	fire.Parent = flame
+end
+
+-- Helper: Decorate wood gate with iron bands, diagonal X-bracing, rivets, pull-rings, and bottom spikes
+local function DecorateGate(gate, isZAxis)
+	local gateSize = gate.Size
+	local gatePos = gate.Position
+
+	local bandColor = Color3.fromRGB(50, 50, 55)
+	local bandMaterial = Enum.Material.Metal
+
+	-- 1. Diagonal X-bracing behind vertical bars
+	local angle = math.atan2(gateSize.Y, isZAxis and gateSize.Z or gateSize.X)
+	local diagonalLength = math.sqrt(gateSize.Y^2 + (isZAxis and gateSize.Z or gateSize.X)^2)
+	
+	for _, dir in ipairs({-1, 1}) do
+		local brace = Instance.new("Part")
+		brace.Name = "DiagonalBrace"
+		brace.Color = Color3.fromRGB(45, 45, 48)
+		brace.Material = bandMaterial
+		brace.Anchored = true
+		brace.CanCollide = false
+		brace.CastShadow = true
+		brace.TopSurface = Enum.SurfaceType.Smooth
+		brace.BottomSurface = Enum.SurfaceType.Smooth
+		
+		if isZAxis then
+			brace.Size = Vector3.new(gateSize.X + 0.05, 0.6, diagonalLength)
+			brace.CFrame = CFrame.new(gatePos) * CFrame.Angles(dir * angle, 0, 0)
+		else
+			brace.Size = Vector3.new(diagonalLength, 0.6, gateSize.Z + 0.05)
+			brace.CFrame = CFrame.new(gatePos) * CFrame.Angles(0, 0, dir * angle)
+		end
+		brace.Parent = gate
+	end
+
+	-- 2. Horizontal iron bands across the gate
+	local numBands = 3
+	for i = 1, numBands do
+		local yOffset = -gateSize.Y/2 + (gateSize.Y / (numBands + 1)) * i
+
+		local band = Instance.new("Part")
+		band.Name = "IronBand_" .. i
+		band.Color = bandColor
+		band.Material = bandMaterial
+		band.Anchored = true
+		band.CanCollide = false
+		band.CastShadow = true
+		band.TopSurface = Enum.SurfaceType.Smooth
+		band.BottomSurface = Enum.SurfaceType.Smooth
+
+		if isZAxis then
+			band.Size = Vector3.new(gateSize.X + 0.2, 0.8, gateSize.Z)
+			band.Position = gatePos + Vector3.new(0, yOffset, 0)
+		else
+			band.Size = Vector3.new(gateSize.X, 0.8, gateSize.Z + 0.2)
+			band.Position = gatePos + Vector3.new(0, yOffset, 0)
+		end
+		band.Parent = gate
+
+		-- 3. Iron studs/rivets along the horizontal band
+		local numStuds = 8
+		for s = 1, numStuds do
+			local t = -0.5 + (s / (numStuds + 1))
+			if isZAxis then
+				local zOffset = gateSize.Z * t
+				for _, faceSign in ipairs({-1, 1}) do
+					local xOffset = faceSign * (gateSize.X/2 + 0.12)
+					local stud = Instance.new("Part")
+					stud.Name = "IronStud"
+					stud.Shape = Enum.PartType.Ball
+					stud.Size = Vector3.new(0.35, 0.35, 0.35)
+					stud.Color = Color3.fromRGB(110, 110, 115)
+					stud.Material = bandMaterial
+					stud.Anchored = true
+					stud.CanCollide = false
+					stud.Position = band.Position + Vector3.new(xOffset, 0, zOffset)
+					stud.Parent = gate
+				end
+			else
+				local xOffset = gateSize.X * t
+				for _, faceSign in ipairs({-1, 1}) do
+					local zOffset = faceSign * (gateSize.Z/2 + 0.12)
+					local stud = Instance.new("Part")
+					stud.Name = "IronStud"
+					stud.Shape = Enum.PartType.Ball
+					stud.Size = Vector3.new(0.35, 0.35, 0.35)
+					stud.Color = Color3.fromRGB(110, 110, 115)
+					stud.Material = bandMaterial
+					stud.Anchored = true
+					stud.CanCollide = false
+					stud.Position = band.Position + Vector3.new(xOffset, 0, zOffset)
+					stud.Parent = gate
+				end
+			end
+		end
+	end
+
+	-- 4. Vertical iron bars (grid)
+	local numBars = 6
+	for i = 1, numBars do
+		local t = -0.5 + (i / (numBars + 1))
+
+		local bar = Instance.new("Part")
+		bar.Name = "IronBar_" .. i
+		bar.Color = bandColor
+		bar.Material = bandMaterial
+		bar.Anchored = true
+		bar.CanCollide = false
+		bar.CastShadow = true
+		bar.TopSurface = Enum.SurfaceType.Smooth
+		bar.BottomSurface = Enum.SurfaceType.Smooth
+
+		if isZAxis then
+			local zOffset = gateSize.Z * t
+			for _, faceSign in ipairs({-1, 1}) do
+				local xOffset = faceSign * (gateSize.X/2 + 0.1)
+				local vBar = bar:Clone()
+				vBar.Size = Vector3.new(0.2, gateSize.Y, 0.4)
+				vBar.Position = gatePos + Vector3.new(xOffset, 0, zOffset)
+				vBar.Parent = gate
+
+				-- 5. Add sharp portcullis ground spike at the bottom of the vertical bar
+				local spike = Instance.new("WedgePart")
+				spike.Name = "Spike"
+				spike.Color = bandColor
+				spike.Material = bandMaterial
+				spike.Size = Vector3.new(0.2, 1.2, 0.4)
+				spike.Anchored = true
+				spike.CanCollide = false
+				spike.CastShadow = true
+				spike.TopSurface = Enum.SurfaceType.Smooth
+				spike.BottomSurface = Enum.SurfaceType.Smooth
+				-- Point wedge downwards
+				spike.CFrame = CFrame.new(vBar.Position - Vector3.new(0, gateSize.Y/2 + 0.6, 0)) * CFrame.Angles(0, 0, math.rad(180))
+				spike.Parent = gate
+			end
+		else
+			local xOffset = gateSize.X * t
+			for _, faceSign in ipairs({-1, 1}) do
+				local zOffset = faceSign * (gateSize.Z/2 + 0.1)
+				local vBar = bar:Clone()
+				vBar.Size = Vector3.new(0.4, gateSize.Y, 0.2)
+				vBar.Position = gatePos + Vector3.new(xOffset, 0, zOffset)
+				vBar.Parent = gate
+
+				-- Add sharp portcullis ground spike at the bottom of the vertical bar
+				local spike = Instance.new("WedgePart")
+				spike.Name = "Spike"
+				spike.Color = bandColor
+				spike.Material = bandMaterial
+				spike.Size = Vector3.new(0.4, 1.2, 0.2)
+				spike.Anchored = true
+				spike.CanCollide = false
+				spike.CastShadow = true
+				spike.TopSurface = Enum.SurfaceType.Smooth
+				spike.BottomSurface = Enum.SurfaceType.Smooth
+				-- Point wedge downwards
+				spike.CFrame = CFrame.new(vBar.Position - Vector3.new(0, gateSize.Y/2 + 0.6, 0)) * CFrame.Angles(math.rad(180), 0, 0)
+				spike.Parent = gate
+			end
+		end
+	end
+
+	-- 6. Add Ring Knockers/Pull Rings on both faces
+	for _, faceSign in ipairs({-1, 1}) do
+		local knockerOffset = isZAxis and Vector3.new(faceSign * (gateSize.X/2 + 0.25), 0, 0) or Vector3.new(0, 0, faceSign * (gateSize.Z/2 + 0.25))
+		local knockerPos = gatePos + knockerOffset
+		
+		-- Base plate
+		local base = Instance.new("Part")
+		base.Name = "KnockerBase"
+		base.Size = isZAxis and Vector3.new(0.1, 1.2, 1.2) or Vector3.new(1.2, 1.2, 0.1)
+		base.Position = knockerPos
+		base.Color = Color3.fromRGB(30, 30, 32)
+		base.Material = Enum.Material.Metal
+		base.Anchored = true
+		base.CanCollide = false
+		base.TopSurface = Enum.SurfaceType.Smooth
+		base.BottomSurface = Enum.SurfaceType.Smooth
+		base.Parent = gate
+
+		-- Ring cylinder square loop (4 parts)
+		local ringSize = 0.8
+		local thickness = 0.15
+		local ringColor = Color3.fromRGB(20, 20, 22)
+		
+		local parts = {
+			{size = Vector3.new(thickness, thickness, ringSize), offset = Vector3.new(0, -ringSize/2, 0)}, -- bottom
+			{size = Vector3.new(thickness, thickness, ringSize), offset = Vector3.new(0, ringSize/2, 0)},  -- top
+			{size = Vector3.new(thickness, ringSize, thickness), offset = Vector3.new(0, 0, -ringSize/2)}, -- left
+			{size = Vector3.new(thickness, ringSize, thickness), offset = Vector3.new(0, 0, ringSize/2)},  -- right
+		}
+		if not isZAxis then
+			parts = {
+				{size = Vector3.new(ringSize, thickness, thickness), offset = Vector3.new(-ringSize/2, -ringSize/2, 0)},
+				{size = Vector3.new(ringSize, thickness, thickness), offset = Vector3.new(ringSize/2, ringSize/2, 0)},
+				{size = Vector3.new(thickness, ringSize, thickness), offset = Vector3.new(-ringSize/2, 0, 0)},
+				{size = Vector3.new(thickness, ringSize, thickness), offset = Vector3.new(ringSize/2, 0, 0)},
+			}
+		end
+
+		for _, pDef in ipairs(parts) do
+			local p = Instance.new("Part")
+			p.Name = "KnockerRing"
+			p.Size = pDef.size
+			p.Position = knockerPos + pDef.offset
+			p.Color = ringColor
+			p.Material = Enum.Material.Metal
+			p.Anchored = true
+			p.CanCollide = false
+			p.TopSurface = Enum.SurfaceType.Smooth
+			p.BottomSurface = Enum.SurfaceType.Smooth
+			p.Parent = gate
+		end
+	end
+end
+
+-- Helper: Add physical sign with two SurfaceGuis for dynamic requirements notice
+local function AddGateSurfaceNotice(gate, isZAxis, noticeText)
+	local board = Instance.new("Part")
+	board.Name = "NoticeBoard"
+	board.Color = Color3.fromRGB(45, 45, 48) -- Slate dark frame
+	board.Material = Enum.Material.Slate
+	board.Anchored = true
+	board.CanCollide = false
+	board.CastShadow = true
+	board.TopSurface = Enum.SurfaceType.Smooth
+	board.BottomSurface = Enum.SurfaceType.Smooth
+
+	-- Place sign in the center of the gate, sticking out 0.2 studs on both sides
+	local gateSize = gate.Size
+	local gatePos = gate.Position
+
+	if isZAxis then
+		board.Size = Vector3.new(4.4, 4, 8)
+		board.Position = gatePos + Vector3.new(0, 2, 0)
+	else
+		board.Size = Vector3.new(8, 4, 4.4)
+		board.Position = gatePos + Vector3.new(0, 2, 0)
+	end
+	board.Parent = gate
+
+	-- Create SurfaceGuis on both sides
+	local facesToCreate = {}
+	if isZAxis then
+		table.insert(facesToCreate, Enum.NormalId.Left)  -- West (outside)
+		table.insert(facesToCreate, Enum.NormalId.Right) -- East (inside)
+	else
+		table.insert(facesToCreate, Enum.NormalId.Front) -- North (inside)
+		table.insert(facesToCreate, Enum.NormalId.Back)  -- South (outside)
+	end
+
+	for _, face in ipairs(facesToCreate) do
+		local surfaceGui = Instance.new("SurfaceGui")
+		surfaceGui.Name = "NoticeSurfaceGui"
+		surfaceGui.Face = face
+		surfaceGui.CanvasSize = Vector2.new(800, 400)
+		surfaceGui.LightInfluence = 0
+		surfaceGui.Enabled = true
+
+		local label = Instance.new("TextLabel")
+		label.Size = UDim2.new(1, 0, 1, 0)
+		label.BackgroundColor3 = Color3.fromRGB(15, 10, 10)
+		label.BackgroundTransparency = 0.1
+		label.TextColor3 = Color3.fromRGB(255, 60, 60)
+		label.TextSize = 48
+		label.Font = Enum.Font.GothamBold
+		label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+		label.TextStrokeTransparency = 0
+		label.TextWrapped = true
+		label.TextScaled = true
+		label.Text = noticeText
+		label.Parent = surfaceGui
+
+		local corner = Instance.new("UICorner")
+		corner.CornerRadius = UDim.new(0.12, 0)
+		corner.Parent = label
+
+		local padding = Instance.new("UIPadding")
+		padding.PaddingTop = UDim.new(0.1, 0)
+		padding.PaddingBottom = UDim.new(0.1, 0)
+		padding.PaddingLeft = UDim.new(0.05, 0)
+		padding.PaddingRight = UDim.new(0.05, 0)
+		padding.Parent = label
+
+		local border = Instance.new("UIStroke")
+		border.Color = Color3.fromRGB(120, 30, 30)
+		border.Thickness = 12
+		border.Parent = label
+
+		surfaceGui.Parent = board
+	end
+end
+
 -- Helper: Setup portal plane with particles and light
 local function CreatePortalEffects(name, size, cf, color, particleColor1, particleColor2, parent)
 	local portalPlane = Instance.new("Part")
@@ -816,6 +1181,21 @@ local function InitializeMap()
 	crystalLight.Shadows = true
 	crystalLight.Parent = crystal
 
+	-- Map Spawn Location (for active gameplay phase)
+	local mapSpawn = Instance.new("SpawnLocation")
+	mapSpawn.Name = "MapSpawnLocation"
+	mapSpawn.Size = Vector3.new(12, 1, 12)
+	mapSpawn.Position = Vector3.new(0, 4.5, -25) -- Align with Keep floor top Y = 4.0
+	mapSpawn.Color = Color3.fromRGB(0, 200, 255)
+	mapSpawn.Material = Enum.Material.SmoothPlastic
+	mapSpawn.Transparency = 1 -- invisible
+	mapSpawn.CanCollide = false
+	mapSpawn.Anchored = true
+	mapSpawn.Neutral = true
+	mapSpawn.Duration = 0
+	mapSpawn.Enabled = false -- starts disabled in Lobby phase
+	mapSpawn.Parent = mapModel
+
 	-- Add 4 torches at the corners of the Castle Keep floor for subtle illumination
 	local keepTorches = {
 		Vector3.new(-42, 4.0, -42),
@@ -906,9 +1286,12 @@ local function InitializeMap()
 			data.Spawn + Vector3.new(0, 1.0, 0),
 			data.PortalColor,
 			Enum.Material.Neon,
-			pathFolder
+			nil
 		)
 		spawnPart.Transparency = 0.4
+		spawnPart.CanCollide = false
+		spawnPart.Parent = pathFolder
+		
 		CollectionService:AddTag(spawnPart, "EnemySpawn")
 		spawnPart:SetAttribute("PathName", pathName)
 
@@ -929,15 +1312,18 @@ local function InitializeMap()
 		for i, pointPos in ipairs(data.Waypoints) do
 			local wp = CreatePart(
 				"Waypoint_" .. i,
-				Vector3.new(4, 4, 4),
-				pointPos + Vector3.new(0, 2.5, 0),
+				Vector3.new(1, 1, 1),
+				pointPos,
 				Color3.fromRGB(255, 255, 255),
 				Enum.Material.SmoothPlastic,
-				waypointsFolder
+				nil
 			)
-			wp.Transparency = 0.9
+			wp.Transparency = 1
 			wp.CanCollide = false
+			wp.CanTouch = false
+			wp.CanQuery = false
 			wp.CastShadow = false
+			wp.Parent = waypointsFolder
 		end
 
 		-- Portal Gatehouses
@@ -1085,6 +1471,175 @@ local function InitializeMap()
 		CollectionService:AddTag(ped, "PlacementZone")
 		ped.CastShadow = true
 		AddHighlight(ped)
+	end
+	-- 5. Create Path Gates (controlled by GameManager for dynamic path scaling)
+	-- Gates block closed paths.
+	local gateDefinitions = {
+		{
+			Name = "ForestGate",
+			Position = Vector3.new(-47, 10, 0),  -- Forest path keep entrance (West Keep Wall X = -47)
+			Size = Vector3.new(4, 16, 24.2),     -- Slides inside 0.1-stud slots in pillars
+			StripColor = Color3.fromRGB(50, 255, 50),
+			DefaultNotice = "LOCKED\nREQUIRES 1+ PLAYERS",
+		},
+		{
+			Name = "UndeadGate",
+			Position = Vector3.new(47, 10, 0),   -- Undead path keep entrance (East Keep Wall X = 47)
+			Size = Vector3.new(4, 16, 24.2),
+			StripColor = Color3.fromRGB(160, 60, 255),
+			DefaultNotice = "LOCKED\nREQUIRES 3+ PLAYERS",
+		},
+		{
+			Name = "DragonGate",
+			Position = Vector3.new(0, 10, 47),   -- Dragon path keep entrance (South Keep Wall Z = 47)
+			Size = Vector3.new(24.2, 16, 4),
+			StripColor = Color3.fromRGB(255, 100, 0),
+			DefaultNotice = "LOCKED\nREQUIRES 5+ PLAYERS & WAVE 10",
+		},
+	}
+
+	for _, gateDef in ipairs(gateDefinitions) do
+		-- Create static stone gatehouse around the gate to close any wall gaps
+		local isZAxis = (gateDef.Name ~= "DragonGate")
+		local pillarColor = Color3.fromRGB(65, 65, 70)
+		
+		if isZAxis then
+			-- Left Pillar (Z = 13.5, size Z = 3) -> ends at Z = 15, matching Keep wall gap boundary
+			local pillarL = CreatePart(
+				gateDef.Name .. "_LeftPillar",
+				Vector3.new(6, 20, 3),
+				gateDef.Position + Vector3.new(0, 0, 13.5),
+				pillarColor,
+				Enum.Material.Cobblestone,
+				mapModel
+			)
+			pillarL.CastShadow = true
+			AddPillarMasonryBands(pillarL, mapModel)
+			
+			-- Right Pillar (Z = -13.5, size Z = 3) -> ends at Z = -15, matching Keep wall gap boundary
+			local pillarR = CreatePart(
+				gateDef.Name .. "_RightPillar",
+				Vector3.new(6, 20, 3),
+				gateDef.Position + Vector3.new(0, 0, -13.5),
+				pillarColor,
+				Enum.Material.Cobblestone,
+				mapModel
+			)
+			pillarR.CastShadow = true
+			AddPillarMasonryBands(pillarR, mapModel)
+			
+			-- Top Arch (spans Z = -15 to 15)
+			local arch = CreatePart(
+				gateDef.Name .. "_Arch",
+				Vector3.new(6, 4, 30),
+				gateDef.Position + Vector3.new(0, 9, 0), -- Y = 10 (center) + 9 = 19 (spans Y = 17 to 21)
+				pillarColor,
+				Enum.Material.Cobblestone,
+				mapModel
+			)
+			arch.CastShadow = true
+
+			-- Add structural keystone in center
+			local keystone = CreatePart(
+				gateDef.Name .. "_Keystone",
+				Vector3.new(6.6, 5, 4),
+				arch.Position,
+				pillarColor,
+				Enum.Material.Slate,
+				mapModel
+			)
+			keystone.CastShadow = true
+
+			-- Add battlements on top of archway
+			AddWallCrenellations(arch, mapModel)
+
+			-- Spawn wall sconce torches facing outwards
+			local torchDirection = (gateDef.Name == "ForestGate") and Vector3.new(-1, 0, 0) or Vector3.new(1, 0, 0)
+			SpawnPillarSconce(pillarL.Position + torchDirection * 3.1 + Vector3.new(0, 2, 0), torchDirection, mapModel)
+			SpawnPillarSconce(pillarR.Position + torchDirection * 3.1 + Vector3.new(0, 2, 0), torchDirection, mapModel)
+		else
+			-- Left Pillar (X = -13.5, size X = 3) -> ends at X = -15, matching Keep wall gap boundary
+			local pillarL = CreatePart(
+				gateDef.Name .. "_LeftPillar",
+				Vector3.new(3, 20, 6),
+				gateDef.Position + Vector3.new(-13.5, 0, 0),
+				pillarColor,
+				Enum.Material.Cobblestone,
+				mapModel
+			)
+			pillarL.CastShadow = true
+			AddPillarMasonryBands(pillarL, mapModel)
+			
+			-- Right Pillar (X = 13.5, size X = 3) -> ends at X = 15, matching Keep wall gap boundary
+			local pillarR = CreatePart(
+				gateDef.Name .. "_RightPillar",
+				Vector3.new(3, 20, 6),
+				gateDef.Position + Vector3.new(13.5, 0, 0),
+				pillarColor,
+				Enum.Material.Cobblestone,
+				mapModel
+			)
+			pillarR.CastShadow = true
+			AddPillarMasonryBands(pillarR, mapModel)
+			
+			-- Top Arch (spans X = -15 to 15)
+			local arch = CreatePart(
+				gateDef.Name .. "_Arch",
+				Vector3.new(30, 4, 6),
+				gateDef.Position + Vector3.new(0, 9, 0),
+				pillarColor,
+				Enum.Material.Cobblestone,
+				mapModel
+			)
+			arch.CastShadow = true
+
+			-- Add structural keystone in center
+			local keystone = CreatePart(
+				gateDef.Name .. "_Keystone",
+				Vector3.new(4, 5, 6.6),
+				arch.Position,
+				pillarColor,
+				Enum.Material.Slate,
+				mapModel
+			)
+			keystone.CastShadow = true
+
+			-- Add battlements on top of archway
+			AddWallCrenellations(arch, mapModel)
+
+			-- Spawn wall sconce torches facing outwards (South)
+			local torchDirection = Vector3.new(0, 0, 1)
+			SpawnPillarSconce(pillarL.Position + torchDirection * 3.1 + Vector3.new(0, 2, 0), torchDirection, mapModel)
+			SpawnPillarSconce(pillarR.Position + torchDirection * 3.1 + Vector3.new(0, 2, 0), torchDirection, mapModel)
+		end
+
+		-- Now create the main gate part (wooden gate)
+		local gateColor = Color3.fromRGB(80, 55, 30) -- oak wood brown
+		local gate = CreatePart(
+			gateDef.Name,
+			gateDef.Size,
+			gateDef.Position,
+			gateColor,
+			Enum.Material.WoodPlanks,
+			mapModel
+		)
+		gate.Transparency = 0
+		gate.CanCollide = true
+		gate.CastShadow = true
+
+		-- Decorate gate with iron bands and bars
+		DecorateGate(gate, isZAxis)
+
+		-- Add dynamic 3D SurfaceGui notice board (double-sided)
+		AddGateSurfaceNotice(gate, isZAxis, gateDef.DefaultNotice)
+
+		-- Add a point light to cast warning glow when closed
+		local gateLight = Instance.new("PointLight")
+		gateLight.Color = gateDef.StripColor
+		gateLight.Range = 24
+		gateLight.Brightness = 3.0
+		gateLight.Enabled = true
+		gateLight.Parent = gate
 	end
 
 	print("Symmetrical High-Quality Map Rebuild Complete!")

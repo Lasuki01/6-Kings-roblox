@@ -57,7 +57,10 @@ local function ApplyCrystalDamage(damage)
 end
 
 -- Procedurally construct enemy model assembly based on class configurations
-local function CreateEnemyModel(enemyType, config)
+-- hpScale/speedScale: player-count scaling multipliers from GameManager
+local function CreateEnemyModel(enemyType, config, hpScale, speedScale)
+	hpScale = hpScale or 1.0
+	speedScale = speedScale or 1.0
 	local model = Instance.new("Model")
 	model.Name = enemyType
 
@@ -229,6 +232,10 @@ local function CreateEnemyModel(enemyType, config)
 		speedMult = math.min(1.6, 1.0 + wavesAbove * 0.02)
 		goldMult = 1.0 + wavesAbove * 0.10
 	end
+
+	-- Stack player-count scaling on top of infinite mode scaling
+	hpMult = hpMult * hpScale
+	speedMult = speedMult * speedScale
 	
 	local finalHP = math.round(config.HP * hpMult)
 	local finalSpeed = math.round(config.Speed * speedMult)
@@ -255,6 +262,7 @@ local function CreateEnemyModel(enemyType, config)
 	model:SetAttribute("IsBoss", config.IsBoss or false)
 	model:SetAttribute("IsFlying", config.IsFlying or false)
 	model:SetAttribute("CurrentWaypointIndex", 0)
+	model:SetAttribute("SizeMultiplier", sizeMult)
 
 	if config.RegenHP then
 		local finalRegen = math.round(config.RegenHP * hpMult)
@@ -262,6 +270,105 @@ local function CreateEnemyModel(enemyType, config)
 	end
 
 	return model
+end
+
+-- Procedural UI: Build and update enemy visual health bar above head
+local function SetupEnemyHealthBar(model, humanoid, sizeMult, enemyType)
+	local rootPart = model.PrimaryPart
+	if not rootPart then return end
+
+	-- 1. Create BillboardGui
+	local billboard = Instance.new("BillboardGui")
+	billboard.Name = "HealthBarGui"
+	billboard.Size = UDim2.new(0, 75, 0, 6)
+	
+	-- Adjust height offset based on enemy dimensions
+	local heightOffset = 5.2 * sizeMult
+	if enemyType == "Dragon" then
+		heightOffset = 7.5
+	elseif enemyType == "LichKing" then
+		heightOffset = 7.2
+	elseif enemyType == "Troll" then
+		heightOffset = 6.4
+	end
+	
+	billboard.StudsOffset = Vector3.new(0, heightOffset, 0)
+	billboard.AlwaysOnTop = true
+	billboard.MaxDistance = 180
+	billboard.Adornee = rootPart
+	billboard.Parent = model
+
+	-- 2. Create Background Frame
+	local background = Instance.new("Frame")
+	background.Name = "Background"
+	background.Size = UDim2.new(1, 0, 1, 0)
+	background.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	background.BackgroundTransparency = 0.4
+	background.BorderSizePixel = 0
+	background.Parent = billboard
+
+	local bgCorner = Instance.new("UICorner")
+	bgCorner.CornerRadius = UDim.new(0.5, 0) -- Pill shaped
+	bgCorner.Parent = background
+
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(0, 0, 0)
+	stroke.Thickness = 1.0
+	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+	stroke.Parent = background
+
+	-- 3. Create Fill Frame
+	local fill = Instance.new("Frame")
+	fill.Name = "Fill"
+	fill.Size = UDim2.new(1, 0, 1, 0)
+	fill.BackgroundColor3 = Color3.fromRGB(230, 40, 40) -- Sleek Crimson Red
+	fill.BorderSizePixel = 0
+	fill.Parent = background
+
+	local fillCorner = Instance.new("UICorner")
+	fillCorner.CornerRadius = UDim.new(0.5, 0) -- Pill shaped
+	fillCorner.Parent = fill
+
+	-- 4. Function to update HP display
+	local function UpdateHPDisplay()
+		local hp = math.max(0, humanoid.Health)
+		local maxHp = humanoid.MaxHealth
+		if maxHp <= 0 then return end
+		
+		local ratio = math.clamp(hp / maxHp, 0, 1)
+		
+		-- Scale the fill width smoothly
+		fill.Size = UDim2.new(ratio, 0, 1, 0)
+
+		-- Synchronize server-side model attribute
+		model:SetAttribute("HP", math.round(hp))
+	end
+
+	-- 6. Connect humanoid health changes
+	local connection
+	connection = humanoid.HealthChanged:Connect(function()
+		if not model.Parent or humanoid.Health <= 0 then
+			if connection then
+				connection:Disconnect()
+				connection = nil
+			end
+			return
+		end
+		UpdateHPDisplay()
+	end)
+
+	-- Clean up connection when model is destroyed
+	local destroyConn
+	destroyConn = model.Destroying:Connect(function()
+		if connection then
+			connection:Disconnect()
+			connection = nil
+		end
+		if destroyConn then
+			destroyConn:Disconnect()
+			destroyConn = nil
+		end
+	end)
 end
 
 -- Distribute gold to nearby path players or keep defenders upon death
@@ -316,7 +423,7 @@ local function HandleEnemyDeath(model)
 				-- Let parts fall
 				child.CanCollide = true
 				-- Add subtle drift velocity
-				child.Velocity = Vector3.new(math.random(-5, 5), 10, math.random(-5, 5))
+				child.AssemblyLinearVelocity = Vector3.new(math.random(-5, 5), 10, math.random(-5, 5))
 			end
 		end
 
@@ -325,7 +432,7 @@ local function HandleEnemyDeath(model)
 		local startTime = os.clock()
 		while (os.clock() - startTime) < 0.8 do
 			local t = (os.clock() - startTime) / 0.8
-			for _, child in ipairs(model:GetChildren()) do
+			for _, child in ipairs(model:GetDescendants()) do
 				if child:IsA("BasePart") then
 					child.Transparency = math.min(1.0, t)
 				end
@@ -442,7 +549,11 @@ local function StartTrollRegeneration(model, humanoid, regenAmount)
 end
 
 -- Spawning logic orchestrator
-local function SpawnEnemy(enemyType, pathName)
+-- hpScale/speedScale come from GameManager (player-count scaling)
+local function SpawnEnemy(enemyType, pathName, hpScale, speedScale)
+	hpScale = hpScale or 1.0
+	speedScale = speedScale or 1.0
+
 	local config = EnemyConfig.Enemies[enemyType]
 	if not config then
 		warn("[EnemyManager] Unknown enemy type requested: " .. tostring(enemyType))
@@ -484,7 +595,7 @@ local function SpawnEnemy(enemyType, pathName)
 	end
 
 	-- Construct procedural character and place at spawn portal
-	local enemyModel = CreateEnemyModel(enemyType, config)
+	local enemyModel = CreateEnemyModel(enemyType, config, hpScale, speedScale)
 	enemyModel:SetAttribute("PathName", pathName)
 	
 	-- Enemies parented to workspace/Enemies folder
@@ -505,15 +616,22 @@ local function SpawnEnemy(enemyType, pathName)
 	end
 	enemyModel.PrimaryPart.CFrame = startSpawnCF
 
-	-- Setup death handling
+	-- Setup health bar and death handling
 	local humanoid = enemyModel:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		local sizeMult = enemyModel:GetAttribute("SizeMultiplier") or 1.0
+		SetupEnemyHealthBar(enemyModel, humanoid, sizeMult, enemyType)
+	end
+	
 	local isDead = false
-	humanoid.Died:Connect(function()
-		if not isDead then
-			isDead = true
-			HandleEnemyDeath(enemyModel)
-		end
-	end)
+	if humanoid then
+		humanoid.Died:Connect(function()
+			if not isDead then
+				isDead = true
+				HandleEnemyDeath(enemyModel)
+			end
+		end)
+	end
 
 	-- Handle Troll regeneration ability
 	if config.RegenHP then

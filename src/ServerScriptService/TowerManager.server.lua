@@ -21,6 +21,32 @@ local PlaceTower = Remotes:WaitForChild("PlaceTower")
 local UpgradeTower = Remotes:WaitForChild("UpgradeTower")
 local SellTower = Remotes:WaitForChild("SellTower")
 
+-- Track rate limits on server
+local rateLimits = {}
+
+-- Simple early-exit rate limiter (max requests per second)
+local function IsRateLimited(player, maxPerSecond)
+	local now = os.clock()
+	local limit = rateLimits[player]
+	if not limit then
+		rateLimits[player] = {count = 1, lastReset = now}
+		return false
+	end
+	
+	if now - limit.lastReset >= 1.0 then
+		limit.count = 1
+		limit.lastReset = now
+		return false
+	end
+	
+	limit.count = limit.count + 1
+	if limit.count > maxPerSecond then
+		return true
+	end
+	
+	return false
+end
+
 -- Helper: Create a styled part
 local function CreateTowerPart(name, size, pos, color, material, parent)
 	local part = Instance.new("Part")
@@ -220,6 +246,7 @@ end
 
 -- Select standard "First" target in range, filtering class and flying parameters
 local function FindBestTarget(towerModel)
+	if not towerModel or not towerModel.Parent or not towerModel.PrimaryPart then return nil end
 	local towerType = towerModel:GetAttribute("Type")
 	local range = towerModel:GetAttribute("Range") or 30
 	local towerPos = towerModel.PrimaryPart.Position
@@ -444,23 +471,56 @@ local function StartTowerAttackLoop(towerModel)
 			local cooldown = towerModel:GetAttribute("Cooldown") or 1.0
 			task.wait(cooldown)
 			
+			if not towerModel.Parent or not towerModel.PrimaryPart then break end
+			
 			-- Search for best target
 			local bestTarget = FindBestTarget(towerModel)
 			if bestTarget then
-				FireTower(towerModel, bestTarget)
+				task.spawn(FireTower, towerModel, bestTarget)
 			end
 		end
 	end)
+end
+
+-- Path validation helper
+local function GetZonePath(zone)
+	local name = zone.Name
+	if string.find(name, "ForestPath") then
+		return "ForestPath"
+	elseif string.find(name, "UndeadPath") then
+		return "UndeadPath"
+	elseif string.find(name, "DragonPass") then
+		return "DragonPass"
+	elseif string.find(name, "Interior") then
+		return "Interior"
+	end
+	return nil
+end
+
+local function IsPlayerAuthorizedForZone(player, zone)
+	local zonePath = GetZonePath(zone)
+	if not zonePath then return false end
+	if zonePath == "Interior" then return true end -- Keep Interior is shared
+	
+	local assignedPath = player:GetAttribute("AssignedPath")
+	return assignedPath == zonePath
 end
 
 -- REMOTE EVENT HANDLERS
 
 -- 1. Handle tower placement request
 PlaceTower.OnServerEvent:Connect(function(player, towerType, placementZone)
+	if IsRateLimited(player, 5) then return end
 	-- Basic input validations
 	if not towerType or not placementZone then return end
 	if not TowerConfig.Towers[towerType] then return end
 	if not placementZone:IsDescendantOf(workspace) or not CollectionService:HasTag(placementZone, "PlacementZone") then return end
+	
+	-- Verify path assignment authorization
+	if not IsPlayerAuthorizedForZone(player, placementZone) then
+		warn("[TowerManager] Player " .. player.Name .. " is not assigned to path of zone: " .. placementZone.Name)
+		return
+	end
 	
 	-- Verify zone occupation
 	if placementZone:GetAttribute("Occupied") == true then
@@ -538,6 +598,7 @@ end)
 
 -- 2. Handle tower upgrade request
 UpgradeTower.OnServerEvent:Connect(function(player, towerModel)
+	if IsRateLimited(player, 5) then return end
 	if not towerModel or not towerModel:IsDescendantOf(workspace) or not CollectionService:HasTag(towerModel, "Tower") then return end
 	if towerModel:GetAttribute("Owner") ~= player.UserId then return end
 	
@@ -562,11 +623,15 @@ UpgradeTower.OnServerEvent:Connect(function(player, towerModel)
 		return
 	end
 	
-	-- Find zone
+	-- Find zone and verify authorization
 	local mapModel = workspace:FindFirstChild("Map")
 	local placementZoneName = towerModel:GetAttribute("PlacementZoneName")
 	local placementZone = placementZoneName and mapModel and mapModel.PlacementZones:FindFirstChild(placementZoneName)
 	if not placementZone then return end
+	if not IsPlayerAuthorizedForZone(player, placementZone) then
+		warn("[TowerManager] Player " .. player.Name .. " unauthorized to upgrade on path of zone: " .. placementZone.Name)
+		return
+	end
 	
 	-- Deduct Gold
 	player:SetAttribute("Gold", currentGold - cost)
@@ -598,6 +663,7 @@ end)
 
 -- 3. Handle tower sell request
 SellTower.OnServerEvent:Connect(function(player, towerModel)
+	if IsRateLimited(player, 5) then return end
 	if not towerModel or not towerModel:IsDescendantOf(workspace) or not CollectionService:HasTag(towerModel, "Tower") then return end
 	if towerModel:GetAttribute("Owner") ~= player.UserId then return end
 	
@@ -618,10 +684,14 @@ SellTower.OnServerEvent:Connect(function(player, towerModel)
 	
 	local refund = math.floor(totalSpent * 0.75)
 	
-	-- Find zone
+	-- Find zone and verify authorization
 	local mapModel = workspace:FindFirstChild("Map")
 	local placementZoneName = towerModel:GetAttribute("PlacementZoneName")
 	local placementZone = placementZoneName and mapModel and mapModel.PlacementZones:FindFirstChild(placementZoneName)
+	if placementZone and not IsPlayerAuthorizedForZone(player, placementZone) then
+		warn("[TowerManager] Player " .. player.Name .. " unauthorized to sell on path of zone: " .. placementZone.Name)
+		return
+	end
 	
 	-- Grant Gold refund
 	local currentGold = player:GetAttribute("Gold") or 0
@@ -638,6 +708,10 @@ SellTower.OnServerEvent:Connect(function(player, towerModel)
 	
 	towerModel:Destroy()
 	print("[TowerManager] " .. player.Name .. " sold " .. towerType .. " Tower for " .. refund .. " Gold refund.")
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+	rateLimits[player] = nil
 end)
 
 print("[TowerManager] System loaded and listening to Place/Upgrade/Sell remotes.")

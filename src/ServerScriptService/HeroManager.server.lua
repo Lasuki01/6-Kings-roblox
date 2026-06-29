@@ -14,6 +14,7 @@ local Modules = ReplicatedStorage:WaitForChild("Modules")
 local Config = Modules:WaitForChild("Config")
 local HeroConfig = require(Config:WaitForChild("HeroConfig"))
 local EnemyConfig = require(Config:WaitForChild("EnemyConfig"))
+local LobbyConfig = require(Config:WaitForChild("LobbyConfig"))
 
 -- Remotes
 local Remotes = ReplicatedStorage:WaitForChild("Remotes")
@@ -145,19 +146,34 @@ local function ConfigureCharacter(player, character, className)
 	if not config then return end
 
 	local humanoid = character:WaitForChild("Humanoid", 10)
-	if not humanoid then return end
+	local rootPart = character:WaitForChild("HumanoidRootPart", 10)
+	if not humanoid or not rootPart then return end
 
 	humanoid.MaxHealth = config.HP
 	humanoid.Health = config.HP
 	humanoid.WalkSpeed = config.Speed
 
+	-- Teleport player based on current game state
+	local gameState = workspace:GetAttribute("GameState") or "Lobby"
+	if gameState == "Lobby" then
+		rootPart.CFrame = CFrame.new(LobbyConfig.LobbyCenter + LobbyConfig.SpawnLocationOffset + Vector3.new(0, 3, 0))
+	else
+		rootPart.CFrame = CFrame.new(0, 6, -25)
+	end
+
 	-- Spawn visual class gear
 	WeldClassWeapons(character, className)
-	print("[HeroManager] Styled " .. player.Name .. " as a " .. className .. ".")
+	print("[HeroManager] Styled and positioned " .. player.Name .. " as a " .. className .. ".")
 end
 
 -- Handle class select request
 SelectClass.OnServerEvent:Connect(function(player, className)
+	local gameState = workspace:GetAttribute("GameState") or "Lobby"
+	if gameState ~= "Lobby" then
+		warn("[HeroManager] Class selection rejected mid-match: " .. player.Name)
+		return
+	end
+
 	local classConfig = HeroConfig.Classes[className]
 	if not classConfig then return end
 
@@ -200,6 +216,9 @@ end
 
 -- Handle Hero Basic Attack
 BasicAttack.OnServerEvent:Connect(function(player)
+	local gameState = workspace:GetAttribute("GameState") or "Lobby"
+	if gameState ~= "Active" and gameState ~= "Intermission" then return end
+	
 	if IsRateLimited(player, 5) then return end -- max 5 attacks per second
 	
 	local className = player:GetAttribute("SelectedClass")
@@ -270,6 +289,9 @@ end)
 
 -- Handle Hero Special Abilities
 UseAbility.OnServerEvent:Connect(function(player)
+	local gameState = workspace:GetAttribute("GameState") or "Lobby"
+	if gameState ~= "Active" and gameState ~= "Intermission" then return end
+	
 	if IsRateLimited(player, 3) then return end -- max 3 ability requests per second
 	
 	local className = player:GetAttribute("SelectedClass")
@@ -493,7 +515,14 @@ UseAbility.OnServerEvent:Connect(function(player)
 			skelHum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
 			skelHum.Parent = skel
 
-			skel.Parent = workspace
+			local minionsFolder = workspace:FindFirstChild("Minions")
+			if not minionsFolder then
+				minionsFolder = Instance.new("Folder")
+				minionsFolder.Name = "Minions"
+				minionsFolder.Parent = workspace
+			end
+			
+			skel.Parent = minionsFolder
 			skelRoot.CFrame = rootPart.CFrame * CFrame.new(math.random(-5, 5), 1, math.random(-5, 5))
 
 			-- minion thread AI

@@ -9,12 +9,12 @@
 
 | Field | Value |
 |---|---|
-| **Current Version** | v1.0.3 |
-| **Phase** | 🎮 Polish & Launch |
+| **Current Version** | v1.3.0-alpha |
+| **Phase** | 🎨 v1.3 Dark-Fantasy UI Redesign |
 | **Last Updated** | June 2026 |
-| **Last GitHub Commit** | Pending |
-| **Branch** | `main` |
-| **Active Feature** | Font and Playtest Audio Bug Fixes |
+| **Last GitHub Commit** | `basic prototype` (18e9618) |
+| **Branch** | `master` |
+| **Active Feature** | Screen-Space Placement & UI Redesign |
 | **Blocking Issues** | None |
 
 
@@ -65,6 +65,7 @@ Track every planned feature here. Status updates as development progresses.
 - [x] Troll implemented (HP regen)
 - [x] Dragon Boss implemented (flies over towers)
 - [x] Lich King final boss (Wave 20)
+- [x] Enemy visual health bars showing HP drop on damage
 
 ### 🗼 Phase 5 — Tower System
 - [x] `TowerManager.server.lua` created
@@ -146,6 +147,279 @@ Track every planned feature here. Status updates as development progresses.
 ## 📋 Version History
 
 Every GitHub push gets logged here. Most recent at the top.
+
+### v1.3.0-alpha — Screen-Space UI Placement & Dark-Fantasy Theme Redesign
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `master`
+**Type:** 🎨 UI/UX & ⚙️ New Feature
+
+**What was added / modified:**
+- **UIStyleConfig Module**: Created a central style definitions configuration storing color palette tokens, class glows, path details, and sound ID tables. Implemented a `SafeGetFont` dynamic font loader with fallback protection to completely bypass Roblox version discrepancies.
+- **Gothic Graphical Details**: Implemented layered dark stone vignette backdrops (`rbxassetid://256336585`), golden filigree corner ornaments (`rbxassetid://3084795328`), and a crossed-swords medieval crest emblem (`rbxassetid://568600104`) behind titles for premium aesthetic depth.
+- **Server Path Allotment**: GameManager server script now distributes players to active paths (e.g. Forest, Undead, Dragon Pass) at match start/intermission, and rebalances allocations if players join or leave.
+- **Server Path validation**: Restricts placing, upgrading, and selling towers to the player's assigned path and keep interior, authorized server-side.
+- **Tactical Defense Grid Minimap**: Redesigned the tower defense console from a text sidebar list into a fullscreen tactical overlay featuring a programmatic 2D coordinate-mapped minimap showing active paths, crystal center, and interactive placement markers. Click a vacant slot with a tower selected to build, or click an occupied slot to review details.
+- **Fixed Tower Firing Loop Crash**: Resolved a server crash where the tower firing and targeting loop attempted to query a tower's PrimaryPart coordinate after the tower model was cleared/destroyed on game reset to the Lobby state. Added guard checks to FindBestTarget and the StartTowerAttackLoop.
+- **Visual Slots Tracker**: Embedded a slots capacity display in the console header showing segments/pips representing occupied slots (gold/gems) vs vacant slots (dark/empty).
+- **Stat Bars Overview**: Added horizontal bar graphics for damage, range, and fire rate inside the right detail sidebar for a quick visual summary.
+- **Horizontal Cards Footer**: Moved tower choices into a smooth horizontal card list with locked overlays for wave-locked defenses.
+- **Treasury & Upgrade Shop**: Designed a centered pop-up shop screen featuring purchase rows for Gems, Extra Tower Slots, VIP status, and Double XP passes, hooked to the client HUD's "SHOP" button.
+- **Path Assignment UI Alerts**:
+  - Epic screen-center gothic banner slide-in with cash/metal sounds when paths are allotted.
+  - Constant HUD status indicator displaying `"DEFENDING: [Path Name]"`.
+  - Client-only temporary glowing Guide Beam stretching from players to their portal entrance for 5s.
+- **Main Menu Split Layout**: Balanced screen layout. Left side details the gothic title header, sword emblems, and pulsing enter button. Right side holds a profile card showing wins, matches, level, and XP bar.
+- **Runic Loader & Countdown**: Match countdown numbers bounce and scale on ticks. Matchmaking loading screen features a rotating golden runic shield loop.
+- **Integrated Crystal HP Bar**: Relocated and integrated the Kingdom Crystal health bar into the Center Column of the bottom HUD. Refined it with a glowing cyan-blue gradient representing mystical crystal energy, a subtle bronze border casing, smooth tween animations, and responsive scaling constraints.
+- **Scaled and Flush Bottom HUD**: Increased size of the bottom HUD (taller vertical footprint and full horizontal scale) and stretched columns to the corners of the screen (100% horizontal coverage). Scaled up class avatars, E ability button, text sizes, margins, and shop/console button widths.
+- **Slimmer Connected Bottom HUD**: Refined the bottom HUD bar to be slimmer (height reduced to 64px on desktop and 72px on mobile) and pushed it 10px off-screen to hide the bottom corners/borders. Styled the master container directly as a single continuous bar with top corner filigrees, making all internal columns borderless and transparent with zero padding.
+- **Fixed HUD Layout Rendering Bug**: Resolved a layout rendering bug where the Master HUD background frames (solid backings and vignette textures) and filigree ornaments were incorrectly positioned horizontally by the master UIListLayout. Wrapped the columns and list layout inside a transparent HUDContent frame, isolating them from the background structures and restoring correct rendering.
+- **HUD Spacing & Button Refinement**: Corrected horizontal spacing anomalies on wide screens. Moved LeftCol E ability button right next to the HP bar, center-aligned CenterCol labels and restricted Crystal HP bar to 240px width (280px mobile) to prevent stretching, and grouped RightCol gold/gems stats stacked next to side-by-side horizontal Shop/Defenses buttons (increasing button click area from 20px to 38px high).
+
+---
+
+### v1.2.7-alpha — Spawning & Matchmaking UI Fixes
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `master`
+**Type:** 🐛 Bug Fixes
+
+**What was fixed:**
+- **Static Lobby Platform**: Pre-instantiated `LobbyPlatform` in `default.project.json` and updated `LobbyZoneController.server.lua` to reference it. Prevents players from falling through to the game map upon fast join.
+- **Fixed Brazier Stuck Glitch**: Replaced the hardcoded lobby teleport coordinate `CFrame.new(0, 153, 0)` in `HeroManager.server.lua` (which spawned players inside the solid central brazier) with correct coordinates using `LobbyConfig.LobbyCenter` and `LobbyConfig.SpawnLocationOffset`.
+- **Closed Floating Lobby UIs Mid-Match**: Updated client `UIController.client.lua` to destroy `MainMenuGui` and `ClassSelectionGui` when the game state changes to active states (`Intermission` or `Active`). Also connected `SyncGameState` in `PartyUIController.client.lua` to destroy matching overlays and panel frames.
+- **Visible Start Countdown**: Raised `countdownOverlay`'s `DisplayOrder` to `12` so it renders on top of the party lobby screen. Set its background frame to non-active (`Active = false`, `Selectable = false`) to ensure the "Leave Party" button remains clickable behind it.
+
+---
+
+### v1.2.6-alpha — Bug & Security Fixes (Audit Phase)
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `master`
+**Type:** 🐛 Bug Fixes & 🛡️ Security Hardening
+
+**What was fixed:**
+- **Fixed Tower Fire-Rate Cooldown Delay**: Refactored `TowerManager.server.lua` to call `FireTower` inside `task.spawn`, preventing projectile flight yields from delaying the master attack loop cooldown.
+- **Throttled Tower Placement Events**: Added `IsRateLimited` (max 5/sec) check to `PlaceTower`, `UpgradeTower`, and `SellTower` remotes to block network/physics flooding.
+- **Prevented Data Saving Overwrite Hazard**: Created `activeSaves` tracking table in `DataManager.server.lua` to yield and reject concurrent/overlapping database write operations on the same player.
+- **Secured Hero Combat Remotes**: Validated `GameState` (must be `"Active"` or `"Intermission"`) on `BasicAttack` and `UseAbility` remotes in `HeroManager.server.lua` to block spamming abilities/skeleton minions in the lobby.
+- **Locked Class Change Mid-Match**: Restricted `SelectClass` character reloads on the server to the `"Lobby"` state to block self-revival cheats during active waves.
+- **Cleaned Up Minion Leaks**: Routed raised Necromancer skeleton minions to `workspace.Minions` and programmed `GameManager.server.lua` to empty the folder on match start and reset.
+- **Resolved Deprecated APIs**: Replaced legacy `tick()` with `os.clock()` in `PartyService.server.lua` and updated `Part.Velocity` to `Part.AssemblyLinearVelocity` in `EnemyManager.server.lua`. Faded out descendants in `GetDescendants()` instead of `GetChildren()` during enemy death.
+
+---
+
+### v1.2.5-alpha — Castle Gates & Player Count Notices
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `master`
+**Type:** ⚙️ New Feature
+
+**What was added:**
+- **Castle Gatehouses & Keep Alignment**: Built static stone pillars (`Enum.Material.Cobblestone`) and archways flanking each of the three path entrances. Aligned all gatehouses exactly to Keep walls (X = -47/47, Z = 47) and closed all gaps.
+- **Wooden/Metal Gates**: Replaced the glowing neon/glass energy gates with opaque wooden gates (`Enum.Material.WoodPlanks`) adorned with horizontal iron reinforcement bands and vertical bars (`Enum.Material.Metal`), sliding 0.1-studs into pillar slots.
+- **Fixed Banner Signs (SurfaceGuis)**: Replaced camera-facing BillboardGuis with a physical plaque board (`NoticeBoard`) that cuts through the gate. Mounted two `SurfaceGui` banners (facing outside and inside the Keep) displaying dynamic, clear text notices (e.g., "LOCKED - REQUIRES 3+ PLAYERS" or "LOCKED - UNLOCKS AT WAVE 10") that do not rotate with the camera.
+- **State Loop Syncing**: Refactored `GameManager.server.lua` to make closed gates fully solid/opaque, update lock warning text dynamically, and toggle the SurfaceGui notices/gates when paths open.
+
+---
+
+### v1.2.4-alpha — Spawning & Transition Fixes
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `master`
+**Type:** 🐛 Bug Fixes
+
+**What was fixed:**
+- **Dynamic SpawnLocation Management**: Created an invisible `MapSpawnLocation` on the Keep. Configured `GameManager` to dynamically toggle enabling/disabling lobby spawns vs map spawns based on active `GameState` changes (Lobby vs Intermission/Active).
+- **Match Start Spawn Logic**: Refactored `TeleportManager:LocalTeleportFallback` to trigger `player:LoadCharacter()` after state changes. Roblox engine now spawns players directly on the Keep map spawn location cleanly.
+- **Safety Catch Floor Fixes**: Enlarged safety catch floor size from 200 to 1000 studs. Restructured touched callbacks to verify `gameState == "Lobby"` before executing safety teleports, preventing active match falling interference.
+- **Victory/GameOver Reset Order**: Swapped order in GameManager reset logic to set state to Lobby and broadcast it before calling `LoadCharacter()`, ensuring players reload cleanly inside the lobby.
+
+---
+
+### v1.2.3-alpha — Enemy HP Bars & Smooth Path Movement
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `master`
+**Type:** ⚙️ New Feature & 🐛 Bug Fixes
+
+**What was added:**
+- **Enemy Health Bars**: Instantiated server-side BillboardGuis floating above enemy heads. Features dark background container, green/orange/red responsive fill transitions, and white GothamBold health number indicators. Updates on `humanoid.HealthChanged`.
+
+**What was fixed:**
+- **Waypoint Collision & Stuttering**: Made physical waypoint parts completely invisible (`Transparency = 1`), disabled all collisions (`CanCollide = false`), touched events (`CanTouch = false`), and raycast queries (`CanQuery = false`).
+- **Waypoint Vertical Offsets**: Replaced 2.5 stud elevated offset, placing waypoints exactly on the path floor so humanoid pathfinding walks smoothly.
+- **SpawnPoint Collision**: Set Portal SpawnPoints to `CanCollide = false` to let spawned units transition out of portals smoothly.
+
+---
+
+### v1.2.2-alpha — Multi-Party Pads, Large Well-Lit Lobby & Safety Catch Floor
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `master`
+**Type:** ⚙️ New Feature & 🐛 Bug Fixes
+
+**What was added:**
+- **Multi-Party Pad System**: Created 4 independent party pads with unique theme colors (Blue, Purple, Green, Orange) allowing different groups to form separate parties.
+- **Large Well-Lit Lobby**: Expanded physical lobby platform size from 80x80 to 160x160 studs. Added 4 overhead ceiling light clusters, a central blue light uplighter, and bright wall-mounted fire sconces placed every 25 studs along the outer walls.
+- **Safety Catch Floor**: Placed an invisible touch-sensitive catch zone at Y=120. If any player falls off the lobby platform, they are safely teleported back to the lobby spawn instead of falling to the game map or void.
+- **Pre-script SpawnLocation**: Configured default project file (`default.project.json`) to pre-instantiate a SpawnLocation on the lobby platform, solving race conditions where players spawned on the bottom baseplate or game map prior to script setup.
+
+**What was fixed:**
+- Fixed "leave party" falling bug: exiting the party teleports players safely to the spawn area and safety catch floor prevents any fall failures.
+- Refactored `PartyManager` from single-party active state to a padId dictionary managing multiple parallel countdowns and lobbies.
+- Refactored server remote service to find players' active party dynamically and validate commands per-pad.
+- Refactored client UI controller to support multi-party dictionary updates and display active pad number in the main title.
+
+---
+
+### v1.2.1-alpha — Lobby System Refinement & Bug Fixes
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `master`
+**Type:** 🐛 Bug Fixes & 🎨 UX Polish
+
+**What was fixed:**
+- Fixed critical countdown cancel bug: `task.spawn` → `task.delay` so `task.cancel` actually works
+- Fixed kicked players receiving no feedback toast (now shows "Kicked by Host")
+- Fixed pad re-join loop during Countdown (was blocking with "Match Already Started", now allows join)
+- Fixed stale party data surviving Victory/GameOver reset (GameManager now calls `PartyManager:ResetParty()`)
+- Fixed `StartMatch` function defined after first reference in GameManager (moved above call site)
+- Fixed connection memory leak in PartyUIController settings buttons (tracked + disconnected on rebuild)
+- Added per-player rate limiting on all party remotes (0.5s throttle)
+
+**What was added:**
+- Player avatar thumbnails (headshots) in party member list via `Players:GetUserThumbnailAsync`
+- DisplayName support in party sync payload and billboard labels
+- Max players expanded from {1,2,3} to {1,2,3,4,5,6} matching GDD's 2-6 co-op spec
+- Pulsing neon glow animation on party pad with particle sparkle emitters
+- Decorative pad edge ring outline and 4 corner torch pillars with fire + pointlights
+- Status-based pad color coding: Blue (standby) → Green (active) → Yellow (countdown) → Red (starting)
+- Slide-in animation for party panel appearing
+- Hover effects on all interactive buttons (scale + color tween)
+- Elastic pop animation on countdown number ticks
+- "WAITING FOR HOST TO START..." label visible to non-host members
+- Host migration toast notification ("YOU ARE NOW THE HOST")
+- Overflow player removal toast ("Party Size Reduced")
+- Member join/leave audio cues
+- Countdown overlay rendered below party GUI (DisplayOrder) so Leave button stays accessible
+- Gradient background accent on party panel
+
+**Files modified:** LobbyConfig.lua, PartyManager.lua, PartyService.server.lua, LobbyZoneController.server.lua, GameManager.server.lua, PartyUIController.client.lua
+
+**Rollbacks:** None
+
+---
+
+### v1.2.0-alpha — Dead Rails-Style Physical Matchmaking Lobby
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `master`
+**Type:** ⚙️ New Feature
+
+**What was added:**
+- Physical matchmaking platform: Single glowing pad in the lobby. Walking onto the pad automatically creates or joins a matchmaking party.
+- Server-authoritative party structure: Manages members, hosts, setting verification, and kick requests.
+- Exit Party button: Displayed to all party members. Clicking teleports them back to spawn, frees their slot, and transfers host safely.
+- Host configuration: Host can set max players (1-3), select difficulty, and start the countdown (5 seconds).
+- TeleportService & Simulation: Reserves a private server on start. Falls back to local keep-teleport simulation in Studio playtests.
+- Overlapping check loop: Runs in LobbyZoneController to add proximity players.
+- Synced client HUD: Custom programmatic glassmorphic party UI showing active squad players, host, options, and countdown overlays.
+
+**Files modified:** LobbyConfig.lua, PartyManager.lua, TeleportManager.lua, PartyService.server.lua, LobbyZoneController.server.lua, PartyUIController.client.lua, GameManager.server.lua, UIController.client.lua, MapManager.server.lua
+
+**Rollbacks:** None
+
+---
+
+### v1.1.2-alpha — Game Mode Selection System (Lobby Phase B+)
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `master`
+**Type:** ⚙️ New Feature
+
+**What was added:**
+- Game Mode selection popup: 10-second voting phase at lobby start to select Solo vs Co-op Mode
+- Solo Mode difficulty scaling override: locked difficulty to 1-player settings (Forest path only, base enemy stats) regardless of server size
+- Co-op Mode dynamic scaling: paths and enemy stats scale dynamically with player counts
+- Screen modal selection: glassmorphic title card with Solo and Co-op descriptive cards, countdown, and active vote tallies
+- Safe resets: mode selections, votes, and player ready attributes reset correctly on Victory/GameOver
+- RemoteEvent integration: SelectGameMode RemoteEvent transmits client selections safely
+
+**Files modified:** SelectGameMode.model.json, GameManager.server.lua, UIController.client.lua
+
+**Rollbacks:** None
+
+---
+
+### v1.1.1-alpha — Cooperative Matchmaking Lobby (Phase B)
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `master`
+**Type:** ⚙️ New Feature
+
+**What was added:**
+- Matchmaking Lobby system: game remains in Lobby state until spawned players ready up
+- Ready status synchronization: RemoteEvent `ToggleReady` and player attribute `IsReady` manage status
+- Automatic game start: game starts instantly when all players in server click READY
+- Lobby countdown: 30-second countdown starts once at least one player readies, starting the match when finished
+- Lobby status UI: top-center panel displays ready ratio (e.g. 1/2 READY) and countdown timer
+- Interactive ready button: button placed above HUD toggles color and state (green READY / red UNREADY)
+- Safe match resets: all player ready attributes are reset upon victory or defeat
+- Robust syncing: data synced via existing SyncGameState remote payloads
+- Floating Lobby Platform: created a physical medieval-gothic floating platform at Y=150 with cobblestone safety walls, central blue fire brazier, and default SpawnLocation
+- Teleportation to Keep: players automatically spawned on the lobby platform and teleported down to the Castle Keep at a safe offset location (Y=6, Z=-25) to avoid getting stuck in the central altar tiers
+- Spawning state checks: players entering/changing class are spawned in the Lobby if in the Lobby state, or directly in the Castle Keep at the safe offset position (Y=6, Z=-25) if the match is active
+- Lobby aesthetics: added 8 decorative skull-light pillars (4 corners + 4 midpoints) with glowing red eyes and neon bone heads
+- Traditional Ready Pad: added physical green Ready Pad platform at Y=151.2 with 3D Billboard label "STEP HERE TO READY"; players standing on the pad are automatically readied, stepping off unreadies them
+
+**Files modified:** default.project.json, GameManager.server.lua, UIController.client.lua, ToggleReady.model.json, MapManager.server.lua, HeroManager.server.lua
+
+**Rollbacks:** None
+
+---
+
+
+### v1.1.0-alpha — Dynamic Path Scaling (Phase A)
+**Date:** June 2026
+**GitHub Commit:** Pending
+**Branch:** `master`
+**Type:** ⚙️ New Feature
+
+**What was added:**
+- Dynamic path scaling: paths open/close based on player count (1-2p = Forest only, 3-4p = Forest + Undead, 5-6p = all 3)
+- Enemy stat scaling: HP +10% and Speed +5% per additional player, stacks with Infinite Mode scaling
+- Wave rerouting: enemies assigned to closed paths automatically reroute to active paths
+- Path gates: ForestGate, UndeadGate, DragonGate basalt portcullis parts with neon energy strips created in MapManager
+- Gate management: GameManager shows/hides gates with visual effects based on active paths
+- HUD indicator: paths label shows 🌲💀🔥 icons for currently active paths
+- Scaling config: `PATH_THRESHOLDS`, `PLAYER_SCALING`, `PATH_PRIORITY` tables in WaveConfig.lua
+- Dragon Pass pre-Wave 10 safety: enemies can't spawn on DragonPass before Wave 10 regardless of path count
+- Gate management fixes: resolved pre-Wave 10 lock issue where Dragon Gate could open before Wave 10 if player count was high
+- Match reset support: changed Dragon Gate destruction to visual/physical disabling with an `Unlocked` attribute
+- Gate restoration: added gate state reset in `InitializeContainers` to restore all gates to their closed state on match restart
+- Dynamic mid-game scaling: supported unlocking Dragon Pass at any wave >= 10 if player count changes mid-match
+
+**Files modified:** WaveConfig.lua, GameManager.server.lua, EnemyManager.server.lua, MapManager.server.lua, UIController.client.lua
+
+**Rollbacks:** None
+
+**Notes:** Ready for Studio playtesting. Verify gate positions, scaling values, and match resets.
+
+---
+
+### v1.0.4 — Basic Prototype Push
+**Date:** June 2026
+**GitHub Commit:** `basic prototype` (18e9618)
+**Branch:** `master`
+**Type:** 📦 Baseline Commit
+
+**What was added:**
+- Committed full codebase baseline including all server managers, client controllers, config modules, remote events, and shared signals.
+- 16 files changed, 4191 insertions. New files: Signals.lua, BasicAttack/SelectClass/SellTower/UpgradeTower RemoteEvents, DataManager, EnemyManager, HeroManager, MonetizationManager, TowerManager, HeroController, UIController.
+
+**Notes:** Baseline commit before v1.1 feature expansion (path scaling, lobby system, weapon animations).
 
 ---
 
